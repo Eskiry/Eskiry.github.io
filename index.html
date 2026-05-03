@@ -114,7 +114,6 @@
       position: relative;
     }
 
-    /* 文章元数据（时间、标签） */
     .post-meta {
       display: flex;
       flex-wrap: wrap;
@@ -134,7 +133,6 @@
       background: var(--border);
     }
 
-    /* 右下角操作栏 */
     .post-action-bar {
       position: absolute;
       right: 0;
@@ -144,7 +142,6 @@
       align-items: center;
     }
 
-    /* 迷你数据按钮组 */
     .data-box {
       display: inline-flex;
       align-items: center;
@@ -248,7 +245,6 @@
       display: inline-block;
     }
 
-    /* 评论区默认折叠+缩小字体 */
     .comments {
       display: none;
       padding: 12px;
@@ -316,13 +312,13 @@
       color: var(--text);
     }
 
-    /* 总访问量样式 - 低调不显眼 */
-    .site-total-visit {
+    /* 底部总访问量 低调样式 */
+    .site-visit {
       text-align: center;
       font-size: 12px;
       color: var(--muted);
-      margin-top: 30px;
-      padding-bottom: 20px;
+      margin-top: 40px;
+      user-select: none;
     }
 
     @media (max-width: 768px) {
@@ -341,7 +337,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <button class="theme-btn" id="themeBtn">夜间模式</button>
+  <button class="theme-btn" id="themeBtn">日间模式</button>
 
   <div class="container">
     <div class="sidebar" id="sidebar">
@@ -353,8 +349,8 @@
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
-      <!-- 总访问量展示位置 -->
-      <div class="site-total-visit" id="totalVisit">加载总访问量...</div>
+      <!-- 全站总访问量 -->
+      <div class="site-visit" id="siteVisit">统计中...</div>
     </div>
   </div>
 
@@ -366,27 +362,18 @@
     const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
     const MY_GITHUB_USERNAME = "Eskiry";
-    
-    // 总访问量 CountAPI 配置
-    const TOTAL_VISIT_API = {
-      namespace: "EskiryBlogTotal",
-      key: "site_total_visit",
-      url: "https://api.countapi.xyz"
-    };
+    const COUNT_API_URL = "https://api.countapi.xyz";
 
+    // ========== 默认夜间模式 ==========
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
-    
-    // ============== 修改1：默认夜间模式 ==============
-    if (savedTheme === 'light') {
-      // 手动设置过日间模式
-      document.documentElement.removeAttribute('data-theme');
-      themeBtn.innerText = '夜间模式';
-    } else {
-      // 默认：夜间模式（无存储/存储为dark）
+    if (savedTheme !== 'light') {
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('blog-theme', 'dark');
       themeBtn.innerText = "日间模式";
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      themeBtn.innerText = "夜间模式";
     }
 
     themeBtn.addEventListener('click', () => {
@@ -402,10 +389,24 @@
       }
     });
 
+    // 全站访问统计
+    async function loadSiteVisit() {
+      const ns = "eskiry-blog-total";
+      const key = "visit";
+      try {
+        await fetch(`${COUNT_API_URL}/hit/${ns}/${key}`);
+        const res = await fetch(`${COUNT_API_URL}/get/${ns}/${key}`);
+        const data = await res.json();
+        document.getElementById("siteVisit").innerText = `全站访问：${data.value.toLocaleString()}`;
+      } catch (e) {
+        document.getElementById("siteVisit").innerText = "全站访问：未知";
+      }
+    }
+
     async function init() {
       await loadLabels();
       await loadPosts();
-      loadTotalSiteVisit(); // 加载总访问量
+      loadSiteVisit();
     }
 
     async function loadLabels() {
@@ -435,21 +436,16 @@
       });
       event.target.classList.add('active');
       currentPage = 1;
-      if (labelName === 'all') {
-        filteredPosts = [...allPosts];
-      } else {
-        filteredPosts = allPosts.filter(post => 
-          post.labels.some(l => l.name === labelName)
-        );
-      }
+      filteredPosts = labelName === 'all' 
+        ? [...allPosts]
+        : allPosts.filter(post => post.labels.some(l => l.name === labelName));
       renderCurrentPage();
     }
 
     function renderCurrentPage() {
       const totalPages = Math.ceil(filteredPosts.length / pageSize);
       const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
-      const currentPosts = filteredPosts.slice(start, end);
+      const currentPosts = filteredPosts.slice(start, start + pageSize);
       renderPosts(currentPosts);
       renderPagination(totalPages);
     }
@@ -460,26 +456,11 @@
         html = "<p style='text-align:center;margin-top:50px;'>该分类下暂无文章</p>";
       } else {
         posts.forEach(art => {
-          // 格式化日期
-          const createdAt = new Date(art.created_at).toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          });
-          const updatedAt = new Date(art.updated_at).toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          });
-          
-          // 生成标签HTML
+          const createdAt = new Date(art.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
+          const updatedAt = new Date(art.updated_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
           let tagsHtml = "";
-          if (art.labels.length > 0) {
-            art.labels.forEach(label => {
-              tagsHtml += `<span class="post-tag" onclick="filterPosts('${label.name}')">${label.name}</span>`;
-            });
-          }
-          
+          art.labels.forEach(label=>tagsHtml += `<span class="post-tag" onclick="filterPosts('${label.name}')">${label.name}</span>`);
+
           html += `
             <div class="post">
               <div class="post-meta">
@@ -491,7 +472,6 @@
                 ${marked.parse(art.body)}
               </div>
               <div class="post-action-bar">
-                <!-- ============== 修改2：删除单篇文章访问量 ============== -->
                 <div class="like-box" onclick="openLikePage(${art.number})">
                   <span>👍</span>
                   <span id="like-${art.number}">0</span>
@@ -519,130 +499,81 @@
       });
     }
 
-    // 展开/收起评论
     function toggleComment(id) {
-      const cmtEl = document.getElementById(`cmt-${id}`);
-      cmtEl.classList.toggle("open");
+      document.getElementById(`cmt-${id}`).classList.toggle("open");
     }
 
-    // 加载点赞数
     async function loadReactions(issueNum) {
       try {
         const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/reactions`);
         const reactions = await res.json();
-        const likeCount = reactions.filter(r => r.content === "+1").length;
-        document.getElementById(`like-${issueNum}`).innerText = likeCount;
-      } catch (e) {
+        document.getElementById(`like-${issueNum}`).innerText = reactions.filter(r=>r.content==="+1").length;
+      } catch {
         document.getElementById(`like-${issueNum}`).innerText = "0";
       }
     }
 
-    // 加载评论 + 赋值评论数量
     async function loadComments(issueNum) {
       const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
       const comments = await res.json();
-      // 更新评论数字
       document.getElementById(`cmt-num-${issueNum}`).innerText = comments.length;
-
-      let ch = "";
-      if (comments.length === 0) {
-        ch = "<p>暂无评论</p>";
-      } else {
-        comments.forEach(c => {
-          ch += `
-            <div class="comment">
-              <div class="comment-user">${c.user.login}</div>
-              <div class="comment-content">${marked.parse(c.body)}</div>
-            </div>
-          `;
-        });
-      }
+      let ch = comments.length ? "" : "<p>暂无评论</p>";
+      comments.forEach(c=>{
+        ch += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>`;
+      });
       ch += `<a href="https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
       document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
     }
 
-    // ============== 修改3：网页总访问量统计 ==============
-    async function loadTotalSiteVisit() {
-      const { namespace, key, url } = TOTAL_VISIT_API;
-      const el = document.getElementById('totalVisit');
-      try {
-        // 获取/初始化/自增总访问量
-        const getRes = await fetch(`${url}/get/${namespace}/${key}`);
-        let data = await getRes.json();
-        
-        if (data.error) {
-          await fetch(`${url}/set/${namespace}/${key}?value=1`);
-          data = { value: 1 };
-        } else {
-          await fetch(`${url}/hit/${namespace}/${key}`);
-        }
-        
-        el.innerText = `总访问量：${data.value.toLocaleString()}`;
-      } catch (e) {
-        el.innerText = "总访问量：--";
-      }
+    function openLikePage(num){
+      window.open(`https://github.com/Eskiry/eskiry.github.io/issues/${num}`,"_blank");
     }
 
-    function openLikePage(issueNum) {
-      window.open(`https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}`, '_blank');
-    }
-
-    function checkCollapseNeed(issueNum) {
-      const contentEl = document.getElementById(`body-${issueNum}`);
-      if (!contentEl) return;
-      contentEl.style.maxHeight = 'none';
-      contentEl.style.overflow = 'visible';
-      const contentHeight = contentEl.scrollHeight;
-      if (contentHeight > COLLAPSE_HEIGHT) {
-        contentEl.classList.add('collapsible');
-      } else {
-        contentEl.classList.remove('collapsible');
-        contentEl.classList.remove('expand');
-      }
-      contentEl.style.maxHeight = '';
-      contentEl.style.overflow = '';
+    function checkCollapseNeed(num){
+      const el = document.getElementById(`body-${num}`);
+      el.style.maxHeight = 'none';
+      el.style.overflow = 'visible';
+      if(el.scrollHeight > COLLAPSE_HEIGHT) el.classList.add("collapsible");
+      el.style.maxHeight = "";
+      el.style.overflow = "";
     }
 
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
       const btn = el.nextElementSibling.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
-      if (el.classList.contains("expand")) {
-        el.classList.remove('collapsible');
+      if(el.classList.contains("expand")){
+        el.classList.remove("collapsible");
         btn.innerText = "收起";
-      } else {
-        setTimeout(() => checkCollapseNeed(id), 0);
+      }else{
+        setTimeout(()=>checkCollapseNeed(id),0);
         btn.innerText = "阅读全文";
       }
     }
 
     function renderPagination(totalPages) {
-      const paginationEl = document.getElementById('pagination');
-      if (totalPages <= 1) {
-        paginationEl.innerHTML = "";
-        return;
-      }
-      paginationEl.innerHTML = `
-        <button class="page-btn" onclick="prevPage()" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
-        <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
-        <button class="page-btn" onclick="nextPage()" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>
+      const wrap = document.getElementById("pagination");
+      if(totalPages<=1) return wrap.innerHTML="";
+      wrap.innerHTML = `
+        <button class="page-btn" onclick="prevPage()" ${currentPage===1?"disabled":""}>上一页</button>
+        <span class="page-info">${currentPage}/${totalPages}</span>
+        <button class="page-btn" onclick="nextPage()" ${currentPage===totalPages?"disabled":""}>下一页</button>
       `;
     }
 
-    function prevPage() {
-      if (currentPage > 1) {
+    function prevPage(){
+      if(currentPage>1){
         currentPage--;
         renderCurrentPage();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top:0,behavior:"smooth"});
       }
     }
-
-    function nextPage() {
-      const totalPages = Math.ceil(filteredPosts.length / pageSize);
-      if (currentPage < totalPages) {
+    function nextPage(){
+      const total = Math.ceil(filteredPosts.length/pageSize);
+      if(currentPage<total){
         currentPage++;
         renderCurrentPage();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top:0,behavior:"smooth"});
       }
     }
 
