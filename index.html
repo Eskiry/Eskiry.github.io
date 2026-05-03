@@ -45,8 +45,7 @@
       padding: 2px 5px;
       border-radius: 4px;
     }
-    /* 评论区样式 */
-    #comment {
+    #giscus-container {
       margin-top: 60px;
       padding-top: 30px;
       border-top: 1px solid #eee;
@@ -58,11 +57,9 @@
   <h1>Blog From Eskiry</h1>
   <div id="list"></div>
 
-  <!-- 全局评论区 -->
-  <div id="comment"></div>
+  <div id="giscus-container"></div>
 
   <script>
-    // 加载所有Issue文章，首页直接显示全文
     fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100")
     .then(res => res.json())
     .then(data => {
@@ -79,13 +76,12 @@
     })
   </script>
 
-  <!-- Giscus 评论 全局加载 -->
   <script src="https://giscus.app/client.js"
     data-repo="Eskiry/eskiry.github.io"
     data-repo-id="R_kgDONRjw5A"
     data-category="Announcements"
     data-category-id="DIC_kwDONRjw5M4Ck5Yd"
-    data-mapping="url"
+    data-mapping="title"
     data-strict="0"
     data-reactions-enabled="1"
     data-emit-metadata="0"
