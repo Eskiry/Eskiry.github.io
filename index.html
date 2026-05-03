@@ -110,32 +110,30 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* 🔥 标题优化：比正文小 + 取消加粗 */
     .post h2 {
       display: none;
-      font-size: 16px; /* 正文18px，标题更小 */
+      font-size: 16px;
       margin: 12px 0;
       color: inherit;
-      font-weight: normal; /* 取消加粗 */
+      font-weight: normal;
       opacity: 0.85;
     }
-    /* 文章展开后显示标题 */
     .post-content.expand ~ h2 {
       display: block;
     }
 
-    /* 摘要高度 640px */
     .post-content {
       font-size: 18px;
-      max-height: 640px;
-      overflow: hidden;
+      max-height: none;
+      overflow: visible;
       position: relative;
       transition: max-height 0.4s ease;
     }
-    .post-content.expand {
-      max-height: 3000px;
+    .post-content.collapsible {
+      max-height: 640px;
+      overflow: hidden;
     }
-    .post-content::after {
+    .post-content.collapsible::after {
       content: "";
       position: absolute;
       left: 0;
@@ -144,6 +142,10 @@
       height: 60px;
       background: linear-gradient(to bottom, var(--mask-start), var(--mask-end));
       pointer-events: none;
+    }
+    .post-content.expand {
+      max-height: 3000px;
+      overflow: visible;
     }
     .post-content.expand::after {
       display: none;
@@ -166,7 +168,7 @@
     }
 
     .toggle-btn {
-      display: inline-block;
+      display: none;
       margin: 15px 0 0 0;
       padding: 8px 18px;
       background: var(--btn-bg);
@@ -177,11 +179,13 @@
       border: none;
       font-family: inherit;
     }
+    .post-content.collapsible ~ .toggle-btn {
+      display: inline-block;
+    }
     .toggle-btn:hover {
       opacity: 0.9;
     }
 
-    /* 默认评论完全隐藏 */
     .comments {
       display: none;
       padding: 20px;
@@ -191,7 +195,6 @@
       max-height: 2000px;
       overflow: hidden;
     }
-    /* 文章展开自动显示评论 */
     .post-content.expand ~ .comments {
       display: block;
     }
@@ -221,7 +224,6 @@
       text-decoration: none;
     }
 
-    /* 🔥 分页样式 */
     .pagination {
       display: flex;
       justify-content: center;
@@ -274,20 +276,18 @@
     <div class="main">
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
-      <!-- 分页容器 -->
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
   <script>
-    // 全局数据
     let allPosts = [];
     let allLabels = [];
-    let filteredPosts = []; // 筛选后的文章
-    let currentPage = 1;    // 当前页码
-    const pageSize = 10;    // 每页显示10篇文章
+    let filteredPosts = [];
+    let currentPage = 1;
+    const pageSize = 25;     // 每页25篇
+    const COLLAPSE_HEIGHT = 640;
 
-    // 日夜模式
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
     if (savedTheme === 'dark') {
@@ -308,13 +308,11 @@
       }
     });
 
-    // 初始化
     async function init() {
       await loadLabels();
       await loadPosts();
     }
 
-    // 加载标签
     async function loadLabels() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/labels");
       allLabels = await res.json();
@@ -328,7 +326,6 @@
       });
     }
 
-    // 加载文章
     async function loadPosts() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100");
       allPosts = await res.json();
@@ -336,14 +333,11 @@
       renderCurrentPage();
     }
 
-    // 筛选文章
     function filterPosts(labelName) {
       document.querySelectorAll('.category-item').forEach(item => {
         item.classList.remove('active');
       });
       event.target.classList.add('active');
-
-      // 筛选后重置为第一页
       currentPage = 1;
       if (labelName === 'all') {
         filteredPosts = [...allPosts];
@@ -355,7 +349,6 @@
       renderCurrentPage();
     }
 
-    // 渲染当前页文章
     function renderCurrentPage() {
       const totalPages = Math.ceil(filteredPosts.length / pageSize);
       const start = (currentPage - 1) * pageSize;
@@ -365,7 +358,6 @@
       renderPagination(totalPages);
     }
 
-    // 渲染文章
     function renderPosts(posts) {
       let html = "";
       if (posts.length === 0) {
@@ -388,10 +380,28 @@
         });
       }
       document.getElementById("list").innerHTML = html;
-      posts.forEach(art => loadComments(art.number));
+      posts.forEach(art => {
+        loadComments(art.number);
+        setTimeout(() => checkCollapseNeed(art.number), 0);
+      });
     }
 
-    // 加载评论
+    function checkCollapseNeed(issueNum) {
+      const contentEl = document.getElementById(`body-${issueNum}`);
+      if (!contentEl) return;
+      contentEl.style.maxHeight = 'none';
+      contentEl.style.overflow = 'visible';
+      const contentHeight = contentEl.scrollHeight;
+      if (contentHeight > COLLAPSE_HEIGHT) {
+        contentEl.classList.add('collapsible');
+      } else {
+        contentEl.classList.remove('collapsible');
+        contentEl.classList.remove('expand');
+      }
+      contentEl.style.maxHeight = '';
+      contentEl.style.overflow = '';
+    }
+
     async function loadComments(issueNum) {
       const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
       const comments = await res.json();
@@ -412,15 +422,19 @@
       document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
     }
 
-    // 展开/收起文章
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
       const btn = el.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
-      btn.innerText = el.classList.contains("expand") ? "收起" : "阅读全文";
+      if (el.classList.contains("expand")) {
+        el.classList.remove('collapsible');
+        btn.innerText = "收起";
+      } else {
+        setTimeout(() => checkCollapseNeed(id), 0);
+        btn.innerText = "阅读全文";
+      }
     }
 
-    // 🔥 渲染分页按钮
     function renderPagination(totalPages) {
       const paginationEl = document.getElementById('pagination');
       if (totalPages <= 1) {
@@ -434,17 +448,14 @@
       `;
     }
 
-    // 上一页
     function prevPage() {
       if (currentPage > 1) {
         currentPage--;
         renderCurrentPage();
-        // 滚动到顶部
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 
-    // 下一页
     function nextPage() {
       const totalPages = Math.ceil(filteredPosts.length / pageSize);
       if (currentPage < totalPages) {
