@@ -1,576 +1,255 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog From Eskiry</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #ffffff;
-      --text: #333333;
+      --bg: #fff;
+      --text: #333;
       --border: #eee;
       --card-bg: #f9f9f9;
       --code-bg: #f6f8fa;
-      --mask-start: transparent;
       --mask-end: #fff;
       --btn-bg: #f1f1f1;
       --btn-text: #0969da;
       --muted: #888;
       --sidebar-bg: #fafafa;
     }
-
     [data-theme="dark"] {
       --bg: #121212;
       --text: #e5e5e5;
       --border: #2a2a2a;
       --card-bg: #1e1e1e;
       --code-bg: #2b2b2b;
-      --mask-start: transparent;
       --mask-end: #121212;
       --btn-bg: #2a2a2a;
       --btn-text: #58a6ff;
       --muted: #777;
       --sidebar-bg: #1a1a1a;
     }
-
-    * {margin: 0; padding: 0; box-sizing: border-box;}
-    body {
-      font-family: "Noto Serif SC", serif;
-      line-height: 1.9;
-      font-size: 17px;
-      background-color: var(--bg);
-      color: var(--text);
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-
-    .container {
-      display: flex;
-      min-height: 100vh;
-      max-width: 1920px;
-      margin: 0 auto;
-    }
-
-    .sidebar {
-      width: 260px;
-      background: var(--sidebar-bg);
-      padding: 40px 20px;
-      border-right: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-    }
-    .sidebar h2 {
-      font-size: 22px;
-      margin-bottom: 25px;
-      text-align: center;
-    }
-    .category-item {
-      padding: 10px 15px;
-      margin: 6px 0;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 18px;
-      transition: background 0.2s;
-    }
-    .category-item.active, .category-item:hover {
-      background: var(--btn-bg);
-      color: var(--btn-text);
-    }
-
-    .main {
-      flex: 1;
-      padding: 40px 5%;
-      padding-bottom: 60px;
-    }
-
-    .theme-btn {
-      position: fixed;
-      top: 20px;
-      right: 5%;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: none;
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 14px;
-      z-index: 99;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 50px;
-      font-weight: 600;
-      font-size: 32px;
-    }
-    .post {
-      padding: 35px 0;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-    }
-
-    .post-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    .post-tag {
-      background: var(--btn-bg);
-      padding: 2px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .post-tag:hover {
-      background: var(--border);
-    }
-
-    .post-action-bar {
-      position: absolute;
-      right: 0;
-      bottom: 10px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .data-box {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 7px;
-      background: var(--btn-bg);
-      border-radius: 4px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .like-box {
-      composes: data-box;
-      cursor: pointer;
-      transition: color .2s;
-    }
-    .like-box:hover {
-      color: var(--btn-text);
-    }
-    .cmt-btn {
-      composes: data-box;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: color .2s;
-      font-family: inherit;
-    }
-    .cmt-btn:hover {
-      color: var(--btn-text);
-    }
-
-    .post h2 {
-      display: none;
-      font-size: 16px;
-      margin: 12px 0;
-      color: inherit;
-      font-weight: normal;
-      opacity: 0.85;
-    }
-    .post-content.expand ~ h2 {
-      display: block;
-    }
-
-    .post-content {
-      font-size: 18px;
-      max-height: none;
-      overflow: visible;
-      position: relative;
-      transition: max-height 0.4s ease;
-    }
-    .post-content.collapsible {
-      max-height: 640px;
-      overflow: hidden;
-    }
-    .post-content.collapsible::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 60px;
-      background: linear-gradient(to bottom, var(--mask-start), var(--mask-end));
-      pointer-events: none;
-    }
-    .post-content.expand {
-      max-height: 3000px;
-      overflow: visible;
-    }
-    .post-content.expand::after {
-      display: none;
-    }
-
-    .post-content img {max-width: 100%; border-radius: 6px;}
-    .post-content pre {
-      background: var(--code-bg);
-      padding: 18px;
-      border-radius: 6px;
-      overflow-x: auto;
-      margin: 18px 0;
-      font-size: 16px;
-    }
-    .post-content code {
-      background: var(--code-bg);
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-
-    .toggle-btn {
-      display: none;
-      margin: 15px 0 0 0;
-      padding: 6px 14px;
-      background: var(--btn-bg);
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      color: var(--btn-text);
-      border: none;
-      font-family: inherit;
-    }
-    .post-content.collapsible ~ .toggle-btn {
-      display: inline-block;
-    }
-
-    .comments {
-      display: none;
-      padding: 12px;
-      background: var(--card-bg);
-      border-radius: 8px;
-      margin-top: 16px;
-      font-size: 13px;
-    }
-    .comments.open {
-      display: block;
-    }
-    .post-content.collapsible:not(.expand) ~ .comments {
-      display: none;
-    }
-
-    .comment {
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .comment:last-child {
-      border-bottom: none;
-    }
-    .comment-user {
-      font-weight: bold;
-      color: var(--btn-text);
-      font-size: 14px;
-    }
-    .comment-content {
-      margin-top: 4px;
-      font-size: 13px;
-    }
-    .jump-comment {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--btn-text);
-      text-decoration: none;
-    }
-
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-top: 40px;
-    }
-    .page-btn {
-      padding: 6px 16px;
-      border-radius: 6px;
-      border: none;
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 14px;
-    }
-    .page-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .page-info {
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    .site-visit {
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 40px;
-      user-select: none;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      .sidebar {
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        position: relative;
-      }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:"Noto Serif SC",serif;line-height:1.9;font-size:17px;background:var(--bg);color:var(--text);transition:.3s}
+    .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
+    .sidebar{width:260px;background:var(--sidebar-bg);padding:40px 20px;border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto}
+    .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
+    .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:18px;transition:.2s}
+    .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
+    .main{flex:1;padding:40px 5% 60px}
+    .theme-btn{position:fixed;top:20px;right:5%;padding:6px 12px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer;font-size:14px;z-index:99}
+    h1{text-align:center;margin-bottom:50px;font-weight:600;font-size:32px}
+    .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
+    .post-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted);margin-bottom:12px}
+    .post-tag{background:var(--btn-bg);padding:2px 8px;border-radius:4px;cursor:pointer}
+    .post-action-bar{position:absolute;right:0;bottom:10px;display:flex;gap:8px;align-items:center}
+    .data-box{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--btn-bg);border-radius:4px;color:var(--muted);font-size:12px}
+    .like-box,.cmt-btn{cursor:pointer}
+    .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
+    .post h2{display:none;font-size:16px;margin:12px 0;opacity:.85}
+    .post-content.expand~h2{display:block}
+    .post-content{font-size:18px;position:relative;transition:max-height .4s}
+    .post-content.collapsible{max-height:640px;overflow:hidden}
+    .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
+    .post-content.expand{max-height:3000px;overflow:visible}
+    .post-content.expand::after{display:none}
+    .post-content img{max-width:100%;border-radius:6px}
+    .post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
+    .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
+    .post-content code{padding:3px 6px;font-size:16px}
+    .toggle-btn{display:none;margin:15px 0 0;padding:6px 14px;background:var(--btn-bg);border-radius:6px;cursor:pointer;color:var(--btn-text);border:none}
+    .post-content.collapsible~.toggle-btn{display:inline-block}
+    .comments{display:none;padding:12px;background:var(--card-bg);border-radius:8px;margin-top:16px;font-size:13px}
+    .comments.open{display:block}
+    .comment{padding:8px 0;border-bottom:1px solid var(--border);line-height:1.6}
+    .comment:last-child{border-bottom:none}
+    .comment-user{font-weight:bold;color:var(--btn-text);font-size:14px}
+    .jump-comment{display:inline-block;margin-top:8px;font-size:12px;color:var(--btn-text);text-decoration:none}
+    .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
+    .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
+    .page-btn:disabled{opacity:.5;cursor:not-allowed}
+    .site-visit{text-align:center;font-size:12px;color:var(--muted);margin-top:40px;user-select:none}
+    @media (max-width:768px){
+      .container{flex-direction:column}
+      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative}
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
   <button class="theme-btn" id="themeBtn">日间模式</button>
-
   <div class="container">
     <div class="sidebar" id="sidebar">
       <h2>文章分类</h2>
       <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
     </div>
-
     <div class="main">
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
       <div class="site-visit">
-        全站访问：<span id="site_pv">0</span> 次 · 
-        访客数：<span id="site_uv">0</span> 人
+        全站访问：<span id="site_pv">0</span> 次 · 访客数：<span id="site_uv">0</span> 人
       </div>
     </div>
   </div>
 
   <script>
-    let allPosts = [];
-    let allLabels = [];
-    let filteredPosts = [];
+    let allPosts = [], allLabels = [], filteredPosts = [];
     let currentPage = 1;
-    const pageSize = 25;
-    const COLLAPSE_HEIGHT = 640;
-    const MY_GITHUB_USERNAME = "Eskiry";
+    const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
 
-    // 本地统计逻辑
-    function initLocalStats() {
-      // 访问次数 PV
-      let pv = localStorage.getItem('blog_pv') || 0;
-      pv = Number(pv) + 1;
-      localStorage.setItem('blog_pv', pv);
-      document.getElementById('site_pv').innerText = pv;
+    // 本地统计
+    function initStats() {
+      let pv = +localStorage.getItem('pv') + 1 || 1;
+      localStorage.setItem('pv', pv);
+      document.getElementById('site_pv').textContent = pv;
 
-      // 访客数 UV（只记录一次）
-      let uv = localStorage.getItem('blog_uv');
-      if (!uv) {
-        uv = 1;
-        localStorage.setItem('blog_uv', uv);
-      }
-      document.getElementById('site_uv').innerText = uv;
+      let uv = localStorage.getItem('uv');
+      if (!uv) { uv = 1; localStorage.setItem('uv', 1); }
+      document.getElementById('site_uv').textContent = uv;
     }
 
-    // 默认夜间模式
+    // 主题切换
     const themeBtn = document.getElementById('themeBtn');
     document.documentElement.setAttribute('data-theme', 'dark');
-    localStorage.setItem('blog-theme', 'dark');
-    themeBtn.innerText = "日间模式";
+    localStorage.setItem('theme', 'dark');
+    themeBtn.textContent = "日间模式";
 
-    themeBtn.addEventListener('click', () => {
-      const isDark = document.documentElement.hasAttribute('data-theme');
-      if (isDark) {
+    themeBtn.onclick = () => {
+      const dark = document.documentElement.hasAttribute('data-theme');
+      if (dark) {
         document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('blog-theme', 'light');
-        themeBtn.innerText = '夜间模式';
+        localStorage.setItem('theme', 'light');
+        themeBtn.textContent = '夜间模式';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('blog-theme', 'dark');
-        themeBtn.innerText = '日间模式';
+        localStorage.setItem('theme', 'dark');
+        themeBtn.textContent = '日间模式';
       }
-    });
+    };
 
     async function init() {
       await loadLabels();
       await loadPosts();
-      initLocalStats(); // 替换原来的不蒜子
+      initStats();
     }
 
     async function loadLabels() {
-      const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/labels");
+      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
       allLabels = await res.json();
-      const sidebar = document.getElementById('sidebar');
-      allLabels.forEach(label => {
+      const side = document.getElementById('sidebar');
+      allLabels.forEach(l => {
         const div = document.createElement('div');
         div.className = 'category-item';
-        div.innerText = label.name;
-        div.onclick = () => filterPosts(label.name);
-        sidebar.appendChild(div);
+        div.textContent = l.name;
+        div.onclick = () => filterPosts(l.name);
+        side.appendChild(div);
       });
     }
 
     async function loadPosts() {
-      const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100");
-      const rawPosts = await res.json();
-      allPosts = rawPosts.filter(post => post.user.login === MY_GITHUB_USERNAME);
+      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=100`);
+      const data = await res.json();
+      allPosts = data.filter(p => p.user.login === USER);
       filteredPosts = [...allPosts];
-      renderCurrentPage();
+      renderPage();
     }
 
-    function filterPosts(labelName) {
-      document.querySelectorAll('.category-item').forEach(item => item.classList.remove('active'));
+    function filterPosts(tag) {
+      document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
       event.target.classList.add('active');
       currentPage = 1;
-      filteredPosts = labelName === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.some(l => l.name === labelName));
-      renderCurrentPage();
+      filteredPosts = tag === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.some(l => l.name === tag));
+      renderPage();
     }
 
-    function renderCurrentPage() {
-      const totalPages = Math.ceil(filteredPosts.length / pageSize);
+    function renderPage() {
+      const total = Math.ceil(filteredPosts.length / pageSize);
       const start = (currentPage - 1) * pageSize;
-      const currentPosts = filteredPosts.slice(start, start + pageSize);
-      renderPosts(currentPosts);
-      renderPagination(totalPages);
+      renderPosts(filteredPosts.slice(start, start + pageSize));
+      renderPagination(total);
     }
 
     function renderPosts(posts) {
-      let html = "";
-      if (posts.length === 0) {
-        html = "<p style='text-align:center;margin-top:50px;'>该分类下暂无文章</p>";
-      } else {
-        posts.forEach(art => {
-          const createdAt = new Date(art.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
-          const updatedAt = new Art(art.updated_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
-          let tagsHtml = "";
-          art.labels.forEach(label=>tagsHtml += `<span class="post-tag" onclick="filterPosts('${label.name}')">${label.name}</span>`);
-
-          html += `
-            <div class="post">
-              <div class="post-meta">
-                <span>发布: ${createdAt}</span>
-                <span>更新: ${updatedAt}</span>
-                ${tagsHtml}
-              </div>
-              <div class="post-content" id="body-${art.number}">
-                ${marked.parse(art.body)}
-              </div>
-              <div class="post-action-bar">
-                <div class="like-box" onclick="openLikePage(${art.number})">
-                  <span>👍</span>
-                  <span id="like-${art.number}">0</span>
-                </div>
-                <button class="cmt-btn" onclick="toggleComment(${art.number})">
-                  <span>💬</span>
-                  <span id="cmt-num-${art.number}">0</span>
-                </button>
-              </div>
-              <h2>${art.title}</h2>
-              <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
-              <div class="comments" id="cmt-${art.number}">
-                <p>加载评论中...</p>
-                <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>
-              </div>
-            </div>
-          `;
-        });
+      if (!posts.length) {
+        document.getElementById('list').innerHTML = "<p style='text-align:center;margin-top:50px;'>该分类下暂无文章</p>";
+        return;
       }
-      document.getElementById("list").innerHTML = html;
+      let html = '';
       posts.forEach(art => {
-        loadReactions(art.number);
-        loadComments(art.number);
-        setTimeout(() => checkCollapseNeed(art.number), 0);
+        const date = d => new Date(d).toLocaleDateString('zh-CN');
+        const tags = art.labels.map(l => `<span class="post-tag" onclick="filterPosts('${l.name}')">${l.name}</span>`).join('');
+        html += `
+          <div class="post">
+            <div class="post-meta">
+              <span>发布: ${date(art.created_at)}</span>
+              <span>更新: ${date(art.updated_at)}</span>${tags}
+            </div>
+            <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
+            <div class="post-action-bar">
+              <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">👍 <span id="l${art.number}">0</span></div>
+              <button class="data-box cmt-btn" onclick="toggleCmt(${art.number})">💬 <span id="c${art.number}">0</span></button>
+            </div>
+            <h2>${art.title}</h2>
+            <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
+            <div class="comments" id="cmt${art.number}">
+              <p>加载评论中...</p>
+              <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>
+            </div>
+          </div>`;
       });
+      document.getElementById('list').innerHTML = html;
+      posts.forEach(art => { loadReactions(art.number); loadComments(art.number); setTimeout(()=>checkCollapse(art.number),0) });
     }
 
-    function toggleComment(id) {
-      document.getElementById(`cmt-${id}`).classList.toggle("open");
-    }
-
-    async function loadReactions(issueNum) {
-      try {
-        const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/reactions`);
-        const reactions = await res.json();
-        document.getElementById(`like-${issueNum}`).innerText = reactions.filter(r=>r.content==="+1").length;
-      } catch {
-        document.getElementById(`like-${issueNum}`).innerText = "0";
-      }
-    }
-
-    async function loadComments(issueNum) {
-      const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
-      const comments = await res.json();
-      document.getElementById(`cmt-num-${issueNum}`).innerText = comments.length;
-      let ch = comments.length ? "" : "<p>暂无评论</p>";
-      comments.forEach(c=>{
-        ch += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>`;
-      });
-      ch += `<a href="https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
-      document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
-    }
-
-    function openLikePage(num){
-      window.open(`https://github.com/Eskiry/eskiry.github.io/issues/${num}`,"_blank");
-    }
-
-    function checkCollapseNeed(num){
-      const el = document.getElementById(`body-${num}`);
-      el.style.maxHeight = 'none';
-      el.style.overflow = 'visible';
-      if(el.scrollHeight > COLLAPSE_HEIGHT) el.classList.add("collapsible");
-      el.style.maxHeight = "";
-      el.style.overflow = "";
-    }
-
-    function toggleBody(id){
-      const el = document.getElementById(`body-${id}`);
-      const btn = el.nextElementSibling.nextElementSibling.nextElementSibling;
+    function toggleCmt(id) { document.getElementById(`cmt${id}`).classList.toggle("open") }
+    function toggleBody(id) {
+      const el = document.getElementById(`b${id}`), btn = el.nextElementSibling.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
-      if(el.classList.contains("expand")){
-        el.classList.remove("collapsible");
-        btn.innerText = "收起";
-      }else{
-        setTimeout(()=>checkCollapseNeed(id),0);
-        btn.innerText = "阅读全文";
-      }
+      if (el.classList.contains("expand")) { el.classList.remove("collapsible"); btn.textContent = "收起"; }
+      else { setTimeout(()=>checkCollapse(id),0); btn.textContent = "阅读全文"; }
     }
 
-    function renderPagination(totalPages) {
-      const wrap = document.getElementById("pagination");
-      if(totalPages<=1) return wrap.innerHTML="";
+    async function loadReactions(id) {
+      try {
+        const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/reactions`);
+        const data = await r.json();
+        document.getElementById(`l${id}`).textContent = data.filter(x=>x.content==="+1").length;
+      } catch(e) { document.getElementById(`l${id}`).textContent = "0" }
+    }
+
+    async function loadComments(id) {
+      const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
+      const list = await r.json();
+      document.getElementById(`c${id}`).textContent = list.length;
+      let html = list.length ? '' : '<p>暂无评论</p>';
+      list.forEach(c => { html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` });
+      html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
+      document.getElementById(`cmt${id}`).innerHTML = html;
+    }
+
+    function checkCollapse(id) {
+      const el = document.getElementById(`b${id}`);
+      el.style.maxHeight = 'none';
+      if (el.scrollHeight > COLLAPSE_HEIGHT) el.classList.add("collapsible");
+      el.style.maxHeight = '';
+    }
+
+    function renderPagination(total) {
+      const wrap = document.getElementById('pagination');
+      if (total <= 1) { wrap.innerHTML = ''; return; }
       wrap.innerHTML = `
-        <button class="page-btn" onclick="prevPage()" ${currentPage===1?"disabled":""}>上一页</button>
-        <span class="page-info">${currentPage}/${totalPages}</span>
-        <button class="page-btn" onclick="nextPage()" ${currentPage===totalPages?"disabled":""}>下一页</button>
-      `;
+        <button class="page-btn" onclick="prev()" ${currentPage===1?'disabled':''}>上一页</button>
+        <span>${currentPage}/${total}</span>
+        <button class="page-btn" onclick="next()" ${currentPage===total?'disabled':''}>下一页</button>`;
     }
 
-    function prevPage(){
-      if(currentPage>1){
-        currentPage--;
-        renderCurrentPage();
-        window.scrollTo({top:0,behavior:"smooth"});
-      }
-    }
-
-    function nextPage(){
-      const total = Math.ceil(filteredPosts.length/pageSize);
-      if(currentPage<total){
-        currentPage++;
-        renderCurrentPage();
-        window.scrollTo({top:0,behavior:"smooth"});
-      }
-    }
-
+    function prev() { currentPage--; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
+    function next() { currentPage++; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
     init();
   </script>
 </body>
