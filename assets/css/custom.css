@@ -1,0 +1,12 @@
+/* 首页强制显示文章全文，不折叠 */
+.post-item .post-excerpt {
+    display: block !important;
+    max-height: unset !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
+}
+
+/* 隐藏阅读全文按钮 */
+.post-item .read-more {
+    display: none !important;
+}
