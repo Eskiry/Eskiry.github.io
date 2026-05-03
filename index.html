@@ -334,8 +334,6 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- 修复：移除 async，正常加载不蒜子统计 -->
-  <script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 <body>
   <button class="theme-btn" id="themeBtn">日间模式</button>
@@ -388,6 +386,16 @@
     async function init() {
       await loadLabels();
       await loadPosts();
+      // 页面加载完成后手动初始化不蒜子
+      initBusuanzi();
+    }
+
+    // 手动加载并初始化不蒜子统计
+    function initBusuanzi() {
+      const script = document.createElement('script');
+      script.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+      script.async = false;
+      document.body.appendChild(script);
     }
 
     async function loadLabels() {
