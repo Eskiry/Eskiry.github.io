@@ -43,8 +43,7 @@
     .theme-btn{position:fixed;top:20px;right:5%;padding:6px 12px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer;font-size:14px;z-index:99}
     h1{text-align:center;margin-bottom:50px;font-weight:600;font-size:32px}
     .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
-    .post-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted);margin-bottom:12px}
-    .post-tag{background:var(--btn-bg);padding:2px 8px;border-radius:4px;cursor:pointer}
+    .post-meta{display:none;}
     .post-action-bar{position:absolute;right:0;bottom:10px;display:flex;gap:8px;align-items:center}
     .data-box{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--btn-bg);border-radius:4px;color:var(--muted);font-size:12px}
     .like-box,.cmt-btn{cursor:pointer}
@@ -71,7 +70,8 @@
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
-    .site-visit{text-align:center;font-size:12px;color:var(--muted);margin-top:40px;user-select:none}
+    .site-visit{text-align:center;font-size:12px;color:var(--muted);margin-top:10px;user-select:none}
+    .last-update{text-align:center;font-size:12px;color:var(--muted);margin-top:40px;user-select:none}
     @media (max-width:768px){
       .container{flex-direction:column}
       .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative}
@@ -91,6 +91,10 @@
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
+      
+      <div class="last-update">
+        最新更新：<span id="lastUpdate">加载中...</span>
+      </div>
       <div class="site-visit">
         全站访问：<span id="site_pv">0</span> 次 · 访客数：<span id="site_uv">0</span> 人
       </div>
@@ -135,7 +139,18 @@
     async function init() {
       await loadLabels();
       await loadPosts();
+      showLastUpdate();
       initStats();
+    }
+
+    // 显示最新更新时间
+    function showLastUpdate() {
+      if (!allPosts.length) return;
+      const dates = allPosts.map(p => new Date(p.updated_at));
+      const latest = new Date(Math.max(...dates)).toLocaleDateString('zh-CN', {
+        year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+      document.getElementById('lastUpdate').textContent = latest;
     }
 
     async function loadLabels() {
@@ -181,10 +196,9 @@
       }
       let html = '';
       posts.forEach(art => {
-        const tags = art.labels.map(l => `<span class="post-tag" onclick="filterPosts('${l.name}')">${l.name}</span>`).join('');
         html += `
           <div class="post">
-            <div class="post-meta">${tags}</div>
+            <div class="post-meta"></div>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
               <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">👍 <span id="l${art.number}">0</span></div>
