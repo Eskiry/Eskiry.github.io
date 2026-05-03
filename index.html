@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blog From Eskiry</title>
+  <title>Paragraphs From Eskiry</title>
   <style>
     * {margin: 0; padding: 0; box-sizing: border-box;}
     body {
@@ -29,9 +29,31 @@
       margin-bottom: 16px;
       color: #222;
     }
+    /* 文章正文默认折叠高度 */
     .post-content {
       font-size: 16px;
-      margin-bottom: 20px;
+      max-height: 220px;
+      overflow: hidden;
+      position: relative;
+      transition: max-height 0.4s ease;
+    }
+    /* 展开后取消高度限制 */
+    .post-content.expand {
+      max-height: 3000px;
+    }
+    /* 渐变遮罩 */
+    .post-content::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 60px;
+      background: linear-gradient(to bottom, transparent, #fff);
+      pointer-events: none;
+    }
+    .post-content.expand::after {
+      display: none;
     }
     .post-content img {max-width: 100%; border-radius: 6px;}
     .post-content pre {
@@ -46,16 +68,42 @@
       padding: 2px 5px;
       border-radius: 4px;
     }
-    /* 评论区样式 */
+
+    /* 按钮通用样式 */
+    .toggle-btn {
+      display: inline-block;
+      margin: 12px 0 20px;
+      padding: 6px 14px;
+      background: #f1f1f1;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #0969da;
+      border: none;
+    }
+    .toggle-btn:hover {
+      background: #e9e9e9;
+    }
+
+    /* 评论区默认折叠 */
     .comments {
-      padding: 20px;
+      padding: 16px;
       background: #f9f9f9;
       border-radius: 8px;
-      margin-top: 20px;
+      margin-top: 10px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .comments.expand {
+      max-height: 2000px;
     }
     .comment {
       padding: 10px 0;
       border-bottom: 1px solid #eee;
+    }
+    .comment:last-child {
+      border-bottom: none;
     }
     .comment-user {
       font-weight: bold;
@@ -65,18 +113,12 @@
       margin-top: 5px;
       font-size: 14px;
     }
-    .comment-btn {
+    .jump-comment {
       display: inline-block;
-      margin-top: 15px;
-      padding: 8px 16px;
-      background: #0969da;
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
+      margin-top: 10px;
       font-size: 14px;
-    }
-    .comment-btn:hover {
-      background: #0657bd;
+      color: #0969da;
+      text-decoration: none;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -86,43 +128,40 @@
   <div id="list"></div>
 
   <script>
-    // 获取所有文章（Issue）
     fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100")
     .then(res => res.json())
     .then(data => {
       let html = "";
       data.forEach(art => {
-        // 文章主体
         html += `
           <div class="post">
             <h2>${art.title}</h2>
-            <div class="post-content">${marked.parse(art.body)}</div>
-            
-            <!-- Issue 评论区 -->
-            <div class="comments" id="comments-${art.number}">
-              <p>加载评论中...</p>
+            <div class="post-content" id="body-${art.number}">
+              ${marked.parse(art.body)}
             </div>
-            
-            <!-- 一键跳转到 Issue 发表评论 -->
-            <a href="${art.html_url}" target="_blank" class="comment-btn">
-              去 GitHub 发表评论
-            </a>
+            <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
+
+            <button class="toggle-btn" onclick="toggleComment(${art.number})">展开评论</button>
+            <div class="comments" id="cmt-${art.number}">
+              <p>加载评论中...</p>
+              <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>
+            </div>
           </div>
         `;
       });
       document.getElementById("list").innerHTML = html;
 
-      // 加载每篇文章的评论
+      // 加载每条issue评论
       data.forEach(art => {
         fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${art.number}/comments`)
         .then(res => res.json())
         .then(comments => {
-          let commentHtml = "";
+          let ch = "";
           if (comments.length === 0) {
-            commentHtml = "<p>暂无评论，快来抢沙发！</p>";
+            ch = "<p>暂无评论</p>";
           } else {
             comments.forEach(c => {
-              commentHtml += `
+              ch += `
                 <div class="comment">
                   <div class="comment-user">${c.user.login}</div>
                   <div class="comment-content">${marked.parse(c.body)}</div>
@@ -130,10 +169,27 @@
               `;
             });
           }
-          document.getElementById(`comments-${art.number}`).innerHTML = commentHtml;
+          ch += `<a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
+          document.getElementById(`cmt-${art.number}`).innerHTML = ch;
         })
       });
     })
+
+    // 切换文章正文展开/收起
+    function toggleBody(id){
+      const el = document.getElementById(`body-${id}`);
+      const btn = el.nextElementSibling;
+      el.classList.toggle("expand");
+      btn.innerText = el.classList.contains("expand") ? "收起" : "阅读全文";
+    }
+
+    // 切换评论区展开/收起
+    function toggleComment(id){
+      const el = document.getElementById(`cmt-${id}`);
+      const btn = el.previousElementSibling;
+      el.classList.toggle("expand");
+      btn.innerText = el.classList.contains("expand") ? "收起评论" : "展开评论";
+    }
   </script>
 </body>
 </html>
