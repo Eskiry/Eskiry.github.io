@@ -35,12 +35,43 @@
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:"Noto Serif SC",serif;line-height:1.9;font-size:17px;background:var(--bg);color:var(--text);transition:.3s}
     .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
-    .sidebar{width:260px;background:var(--sidebar-bg);padding:40px 20px;border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto}
+    .sidebar{
+      width:260px;
+      background:var(--sidebar-bg);
+      padding:40px 20px;
+      border-right:1px solid var(--border);
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+    }
+    .sidebar-main{flex:1;}
+    .sidebar-footer{
+      margin-top:auto;
+      padding-top:30px;
+      border-top:1px solid var(--border);
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.8;
+    }
     .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
     .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:18px;transition:.2s}
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:40px 5% 60px}
-    .theme-btn{position:fixed;top:20px;right:5%;padding:6px 12px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer;font-size:14px;z-index:99}
+    .theme-btn{
+      margin-bottom:15px;
+      padding:6px 12px;
+      border-radius:6px;
+      border:none;
+      background:var(--btn-bg);
+      color:var(--btn-text);
+      cursor:pointer;
+      font-size:14px;
+      font-family:inherit;
+    }
     h1{text-align:center;margin-bottom:50px;font-weight:600;font-size:32px}
     .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
     .post-meta{display:none;}
@@ -70,34 +101,34 @@
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
-    .footer-info{
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-      margin-top:40px;
-      user-select:none;
+    @media (max-width:768px){
+      .container{flex-direction:column}
+      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative}
+      .sidebar-footer{margin-top:20px;padding-top:20px;}
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
-  <button class="theme-btn" id="themeBtn">日间模式</button>
   <div class="container">
     <div class="sidebar" id="sidebar">
-      <h2>文章分类</h2>
-      <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
+      <div class="sidebar-main">
+        <h2>文章分类</h2>
+        <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
+      </div>
+      <div class="sidebar-footer">
+        <button class="theme-btn" id="themeBtn">日间模式</button>
+        <div>最新更新：<span id="lastUpdate">加载中...</span></div>
+        <div>全站访问：<span id="site_pv">0</span> 次</div>
+        <div>访客数：<span id="site_uv">0</span> 人</div>
+      </div>
     </div>
+
     <div class="main">
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
-      
-      <div class="footer-info">
-        最新更新：<span id="lastUpdate">加载中...</span>
-        &nbsp;&nbsp;全站访问：<span id="site_pv">0</span> 次
-        &nbsp;&nbsp;访客数：<span id="site_uv">0</span> 人
-      </div>
     </div>
   </div>
 
@@ -162,7 +193,7 @@
         div.className = 'category-item';
         div.textContent = l.name;
         div.onclick = () => filterPosts(l.name);
-        side.appendChild(div);
+        side.querySelector('.sidebar-main').appendChild(div);
       });
     }
 
