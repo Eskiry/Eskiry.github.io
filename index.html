@@ -18,6 +18,7 @@
       --mask-end: #fff;
       --btn-bg: #f1f1f1;
       --btn-text: #0969da;
+      --sidebar-bg: #fafafa;
     }
 
     [data-theme="dark"] {
@@ -30,22 +31,60 @@
       --mask-end: #121212;
       --btn-bg: #2a2a2a;
       --btn-text: #58a6ff;
+      --sidebar-bg: #1a1a1a;
     }
 
     * {margin: 0; padding: 0; box-sizing: border-box;}
     body {
-      /* 版面全屏自适应，不再固定窄宽度 */
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 40px 5%;
-      /* 开源衬线字体 */
       font-family: "Noto Serif SC", serif;
       line-height: 1.9;
-      /* 全局字体加大 */
       font-size: 17px;
       background-color: var(--bg);
       color: var(--text);
       transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* 布局：侧边栏 + 主体 */
+    .container {
+      display: flex;
+      min-height: 100vh;
+      max-width: 1920px;
+      margin: 0 auto;
+    }
+
+    /* 侧边栏 */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      padding: 40px 20px;
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar h2 {
+      font-size: 22px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    .category-item {
+      padding: 10px 15px;
+      margin: 6px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.2s;
+    }
+    .category-item.active, .category-item:hover {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+    }
+
+    /* 主体内容 */
+    .main {
+      flex: 1;
+      padding: 40px 5%;
     }
 
     .theme-btn {
@@ -60,6 +99,7 @@
       cursor: pointer;
       font-family: inherit;
       font-size: 15px;
+      z-index: 99;
     }
 
     h1 {
@@ -78,7 +118,6 @@
       color: inherit;
     }
 
-    /* 折叠高度保持320px */
     .post-content {
       font-size: 18px;
       max-height: 320px;
@@ -171,16 +210,46 @@
       color: var(--btn-text);
       text-decoration: none;
     }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <button class="theme-btn" id="themeBtn">夜间模式</button>
 
-  <h1>Blog From Eskiry</h1>
-  <div id="list"></div>
+  <div class="container">
+    <!-- 侧边栏分类 -->
+    <div class="sidebar" id="sidebar">
+      <h2>文章分类</h2>
+      <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="main">
+      <h1>Blog From Eskiry</h1>
+      <div id="list"></div>
+    </div>
+  </div>
 
   <script>
+    // 全局数据
+    let allPosts = [];
+    let allLabels = [];
+
+    // 日夜模式
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
     if (savedTheme === 'dark') {
@@ -201,51 +270,102 @@
       }
     });
 
-    fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100")
-    .then(res => res.json())
-    .then(data => {
-      let html = "";
-      data.forEach(art => {
-        html += `
-          <div class="post">
-            <h2>${art.title}</h2>
-            <div class="post-content" id="body-${art.number}">
-              ${marked.parse(art.body)}
-            </div>
-            <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
-            <button class="toggle-btn" onclick="toggleComment(${art.number})">展开评论</button>
-            <div class="comments" id="cmt-${art.number}">
-              <p>加载评论中...</p>
-              <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>
-            </div>
-          </div>
-        `;
+    // 初始化：加载标签 + 文章
+    async function init() {
+      await loadLabels();
+      await loadPosts();
+    }
+
+    // 1. 加载仓库所有Labels
+    async function loadLabels() {
+      const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/labels");
+      allLabels = await res.json();
+      const sidebar = document.getElementById('sidebar');
+      allLabels.forEach(label => {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.innerText = label.name;
+        div.onclick = () => filterPosts(label.name);
+        sidebar.appendChild(div);
       });
+    }
+
+    // 2. 加载所有文章
+    async function loadPosts() {
+      const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100");
+      allPosts = await res.json();
+      renderPosts(allPosts);
+    }
+
+    // 3. 筛选文章
+    function filterPosts(labelName) {
+      // 激活样式
+      document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // 筛选
+      let filtered = allPosts;
+      if (labelName !== 'all') {
+        filtered = allPosts.filter(post => 
+          post.labels.some(l => l.name === labelName)
+        );
+      }
+      renderPosts(filtered);
+    }
+
+    // 4. 渲染文章
+    function renderPosts(posts) {
+      let html = "";
+      if (posts.length === 0) {
+        html = "<p style='text-align:center;margin-top:50px;'>该分类下暂无文章</p>";
+      } else {
+        posts.forEach(art => {
+          html += `
+            <div class="post">
+              <h2>${art.title}</h2>
+              <div class="post-content" id="body-${art.number}">
+                ${marked.parse(art.body)}
+              </div>
+              <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
+              <button class="toggle-btn" onclick="toggleComment(${art.number})">展开评论</button>
+              <div class="comments" id="cmt-${art.number}">
+                <p>加载评论中...</p>
+                <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>
+              </div>
+            </div>
+          `;
+        });
+      }
       document.getElementById("list").innerHTML = html;
 
-      data.forEach(art => {
-        fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${art.number}/comments`)
-        .then(res => res.json())
-        .then(comments => {
-          let ch = "";
-          if (comments.length === 0) {
-            ch = "<p>暂无评论</p>";
-          } else {
-            comments.forEach(c => {
-              ch += `
-                <div class="comment">
-                  <div class="comment-user">${c.user.login}</div>
-                  <div class="comment-content">${marked.parse(c.body)}</div>
-                </div>
-              `;
-            });
-          }
-          ch += `<a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
-          document.getElementById(`cmt-${art.number}`).innerHTML = ch;
-        })
-      });
-    })
+      // 加载评论
+      posts.forEach(art => loadComments(art.number));
+    }
 
+    // 5. 加载评论
+    async function loadComments(issueNum) {
+      const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
+      const comments = await res.json();
+      let ch = "";
+      if (comments.length === 0) {
+        ch = "<p>暂无评论</p>";
+      } else {
+        comments.forEach(c => {
+          ch += `
+            <div class="comment">
+              <div class="comment-user">${c.user.login}</div>
+              <div class="comment-content">${marked.parse(c.body)}</div>
+            </div>
+          `;
+        });
+      }
+      ch += `<a href="https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
+      document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
+    }
+
+    // 展开/收起文章
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
       const btn = el.nextElementSibling;
@@ -253,12 +373,16 @@
       btn.innerText = el.classList.contains("expand") ? "收起" : "阅读全文";
     }
 
+    // 展开/收起评论
     function toggleComment(id){
       const el = document.getElementById(`cmt-${id}`);
       const btn = el.previousElementSibling;
       el.classList.toggle("expand");
       btn.innerText = el.classList.contains("expand") ? "收起评论" : "展开评论";
     }
+
+    // 启动
+    init();
   </script>
 </body>
 </html>
