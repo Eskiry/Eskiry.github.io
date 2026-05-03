@@ -5,36 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eskiry's Blog</title>
   <style>
-    body { max-width: 800px; margin: 0 auto; padding: 20px; font-family: "Noto Sans SC", sans-serif; line-height: 1.8; }
-    .post { border-bottom: 1px solid #eee; padding: 20px 0; margin-bottom: 20px; }
-    .post h2 { margin: 0 0 15px 0; color: #24292e; }
-    .post-content { color: #24292e; }
-    pre { background: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; }
-    code { background: #f6f8fa; padding: 2px 4px; border-radius: 4px; }
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      font-family: "Noto Sans SC", sans-serif;
+      line-height: 1.9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #24292e;
+    }
+    .post {
+      padding: 25px 0;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+    .post h2 {
+      margin-bottom: 20px;
+      color: #24292e;
+    }
+    .post-content {
+      font-size: 16px;
+      line-height: 1.9;
+    }
+    .comment-wrap {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px dashed #ccc;
+    }
+    img {max-width: 100%; border-radius: 6px;}
+    pre {
+      background: #f6f8fa;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+    code {
+      background: #f6f8fa;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <h1>Eskiry's Blog</h1>
-  <div id="posts"></div>
+  <div id="blog"></div>
 
   <script>
-    // 拉取你的所有 Issues 并显示全文
     fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?state=all&per_page=100")
       .then(res => res.json())
-      .then(posts => {
-        const postsContainer = document.getElementById('posts');
-        posts.forEach(post => {
-          const postDiv = document.createElement('div');
-          postDiv.className = 'post';
-          // 渲染完整 Markdown 内容
-          postDiv.innerHTML = `
-            <h2>${post.title}</h2>
-            <div class="post-content">${marked.parse(post.body)}</div>
+      .then(data => {
+        let html = "";
+        data.forEach(item => {
+          html += `
+            <div class="post">
+              <h2>${item.title}</h2>
+              <div class="post-content">${marked.parse(item.body)}</div>
+              <div class="comment-wrap">
+                <script src="https://giscus.app/client.js"
+                  data-repo="Eskiry/eskiry.github.io"
+                  data-repo-id="R_kgDONRjw5A"
+                  data-category="Announcements"
+                  data-category-id="DIC_kwDONRjw5M4Ck5Yd"
+                  data-mapping="issue-id"
+                  data-issue-id="${item.id}"
+                  data-strict="1"
+                  data-reactions-enabled="1"
+                  data-emit-metadata="0"
+                  data-theme="light"
+                  data-lang="zh-CN"
+                  crossorigin="anonymous" async>
+                </script>
+              </div>
+            </div>
           `;
-          postsContainer.appendChild(postDiv);
         });
-      });
+        document.getElementById("blog").innerHTML = html;
+      })
   </script>
 </body>
 </html>
