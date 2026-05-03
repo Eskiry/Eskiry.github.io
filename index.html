@@ -334,6 +334,8 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- 不蒜子在线统计脚本 -->
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 <body>
   <button class="theme-btn" id="themeBtn">日间模式</button>
@@ -348,7 +350,10 @@
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
-      <div class="site-visit" id="siteVisit">全站访问：统计中...</div>
+      <div class="site-visit">
+        全站访问：<span id="busuanzi_value_site_pv"></span> 次 · 
+        访客数：<span id="busuanzi_value_site_uv"></span> 人
+      </div>
     </div>
   </div>
 
@@ -380,31 +385,9 @@
       }
     });
 
-    // ========== 最终稳定统计｜无跨域｜国内可用 ==========
-    const VISIT_KEY = "eskiry_blog_total_visit";
-    const SESSION_KEY = "eskiry_blog_session";
-    const EXPIRE_TIME = 3600000; // 1小时
-
-    function loadSafeVisit() {
-      const now = Date.now();
-      let total = Number(localStorage.getItem(VISIT_KEY)) || 0;
-      let session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
-
-      // 1小时内不重复计数
-      if (!session.time || now - session.time > EXPIRE_TIME) {
-        total++;
-        localStorage.setItem(VISIT_KEY, total);
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ time: now }));
-      }
-
-      // 直接显示，百分百不会报错
-      document.getElementById("siteVisit").innerText = `全站访问：${total.toLocaleString()}`;
-    }
-
     async function init() {
       await loadLabels();
       await loadPosts();
-      loadSafeVisit();
     }
 
     async function loadLabels() {
@@ -562,6 +545,7 @@
         window.scrollTo({top:0,behavior:"smooth"});
       }
     }
+
     function nextPage(){
       const total = Math.ceil(filteredPosts.length/pageSize);
       if(currentPage<total){
