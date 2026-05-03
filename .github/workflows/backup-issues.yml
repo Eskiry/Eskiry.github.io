@@ -1,0 +1,52 @@
+name: 自动备份博客文章
+on:
+  push:
+    branches: [main]
+  issues:
+    types: [opened, edited, deleted]
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      - name: 安装依赖
+        run: sudo apt install -y jq
+
+      - name: 获取所有 Issues 并备份
+        run: |
+          # 创建备份文件夹
+          mkdir -p backup
+          
+          # 拉取所有公开 Issues (排除拉取请求)
+          curl -s "https://api.github.com/repos/Eskiry/eskiry.github.io/issues?state=all&per_page=100" | \
+          jq -c '.[] | select(.pull_request | not)' | while read issue; do
+            # 获取文章信息
+            number=$(echo "$issue" | jq -r '.number')
+            title=$(echo "$issue" | jq -r '.title' | sed 's/[\/:*?"<>|]/-/g')
+            body=$(echo "$issue" | jq -r '.body')
+            created_at=$(echo "$issue" | jq -r '.created_at')
+            labels=$(echo "$issue" | jq -r '.labels[].name' | tr '\n' ' ')
+
+            # 生成 Markdown 备份文件
+            cat > "backup/${number}-${title}.md" << EOF
+# ${title}
+发布时间：${created_at}
+分类标签：${labels}
+
+---
+
+${body}
+EOF
+          done
+
+      - name: 提交备份文件
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add backup/
+          git commit -m "自动备份文章 $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
+          git push
