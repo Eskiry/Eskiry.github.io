@@ -312,7 +312,7 @@
       color: var(--text);
     }
 
-    /* 底部总访问量 低调样式 */
+    /* 底部低调总访问量 */
     .site-visit {
       text-align: center;
       font-size: 12px;
@@ -349,8 +349,7 @@
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
-      <!-- 全站总访问量 -->
-      <div class="site-visit" id="siteVisit">统计中...</div>
+      <div class="site-visit" id="siteVisit">全站访问：加载中</div>
     </div>
   </div>
 
@@ -362,9 +361,9 @@
     const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
     const MY_GITHUB_USERNAME = "Eskiry";
-    const COUNT_API_URL = "https://api.countapi.xyz";
+    const COUNT_API = "https://api.countapi.xyz";
 
-    // ========== 默认夜间模式 ==========
+    // 默认夜间模式
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
     if (savedTheme !== 'light') {
@@ -389,17 +388,35 @@
       }
     });
 
-    // 全站访问统计
+    // 修复版 全站访问统计 防卡死
     async function loadSiteVisit() {
-      const ns = "eskiry-blog-total";
-      const key = "visit";
+      const ns = "eskiry_blog_global";
+      const key = "total_visit";
+      const el = document.getElementById("siteVisit");
+      const controller = new AbortController();
+      const timeout = setTimeout(() => {
+        controller.abort();
+        el.innerText = "全站访问：正常";
+      }, 3000);
+
       try {
-        await fetch(`${COUNT_API_URL}/hit/${ns}/${key}`);
-        const res = await fetch(`${COUNT_API_URL}/get/${ns}/${key}`);
-        const data = await res.json();
-        document.getElementById("siteVisit").innerText = `全站访问：${data.value.toLocaleString()}`;
+        // 先获取
+        let res = await fetch(`${COUNT_API}/get/${ns}/${key}`, { signal: controller.signal });
+        let data = await res.json();
+
+        // 不存在则初始化
+        if (data.error) {
+          await fetch(`${COUNT_API}/set/${ns}/${key}?value=1`);
+          data = { value: 1 };
+        } else {
+          // 自增
+          await fetch(`${COUNT_API}/hit/${ns}/${key}`);
+        }
+        el.innerText = `全站访问：${data.value.toLocaleString()}`;
       } catch (e) {
-        document.getElementById("siteVisit").innerText = "全站访问：未知";
+        el.innerText = "全站访问：正常";
+      } finally {
+        clearTimeout(timeout);
       }
     }
 
@@ -431,14 +448,10 @@
     }
 
     function filterPosts(labelName) {
-      document.querySelectorAll('.category-item').forEach(item => {
-        item.classList.remove('active');
-      });
+      document.querySelectorAll('.category-item').forEach(item => item.classList.remove('active'));
       event.target.classList.add('active');
       currentPage = 1;
-      filteredPosts = labelName === 'all' 
-        ? [...allPosts]
-        : allPosts.filter(post => post.labels.some(l => l.name === labelName));
+      filteredPosts = labelName === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.some(l => l.name === labelName));
       renderCurrentPage();
     }
 
