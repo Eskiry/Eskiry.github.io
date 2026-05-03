@@ -181,14 +181,10 @@
       }
       let html = '';
       posts.forEach(art => {
-        const date = d => new Date(d).toLocaleDateString('zh-CN');
         const tags = art.labels.map(l => `<span class="post-tag" onclick="filterPosts('${l.name}')">${l.name}</span>`).join('');
         html += `
           <div class="post">
-            <div class="post-meta">
-              <span>发布: ${date(art.created_at)}</span>
-              <span>更新: ${date(art.updated_at)}</span>${tags}
-            </div>
+            <div class="post-meta">${tags}</div>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
               <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">👍 <span id="l${art.number}">0</span></div>
