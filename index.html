@@ -113,6 +113,26 @@
       position: relative;
     }
 
+    /* 文章元数据（时间、标签） */
+    .post-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .post-tag {
+      background: var(--btn-bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .post-tag:hover {
+      background: var(--border);
+    }
+
     /* 右下角操作栏 */
     .post-action-bar {
       position: absolute;
@@ -123,35 +143,33 @@
       align-items: center;
     }
 
-    /* 迷你点赞按钮 */
-    .like-box {
+    /* 迷你数据按钮组 */
+    .data-box {
       display: inline-flex;
       align-items: center;
       gap: 3px;
       padding: 2px 7px;
       background: var(--btn-bg);
       border-radius: 4px;
-      cursor: pointer;
       color: var(--muted);
       font-size: 12px;
+    }
+    .like-box {
+      composes: data-box;
+      cursor: pointer;
       transition: color .2s;
     }
     .like-box:hover {
       color: var(--btn-text);
     }
-
-    /* 迷你评论按钮 低调化 */
+    .view-box {
+      composes: data-box;
+    }
     .cmt-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 7px;
+      composes: data-box;
       background: transparent;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
-      color: var(--muted);
-      font-size: 12px;
       transition: color .2s;
       font-family: inherit;
     }
@@ -339,6 +357,9 @@
     const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
     const MY_GITHUB_USERNAME = "Eskiry";
+    // CountAPI配置 - 用于浏览量统计
+    const COUNT_API_NAMESPACE = "EskiryBlog";
+    const COUNT_API_URL = "https://api.countapi.xyz";
 
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
@@ -417,12 +438,41 @@
         html = "<p style='text-align:center;margin-top:50px;'>该分类下暂无文章</p>";
       } else {
         posts.forEach(art => {
+          // 格式化日期
+          const createdAt = new Date(art.created_at).toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+          const updatedAt = new Date(art.updated_at).toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+          
+          // 生成标签HTML
+          let tagsHtml = "";
+          if (art.labels.length > 0) {
+            art.labels.forEach(label => {
+              tagsHtml += `<span class="post-tag" onclick="filterPosts('${label.name}')">${label.name}</span>`;
+            });
+          }
+          
           html += `
             <div class="post">
+              <div class="post-meta">
+                <span>发布: ${createdAt}</span>
+                <span>更新: ${updatedAt}</span>
+                ${tagsHtml}
+              </div>
               <div class="post-content" id="body-${art.number}">
                 ${marked.parse(art.body)}
               </div>
               <div class="post-action-bar">
+                <div class="view-box">
+                  <span>👁️</span>
+                  <span id="view-${art.number}">0</span>
+                </div>
                 <div class="like-box" onclick="openLikePage(${art.number})">
                   <span>👍</span>
                   <span id="like-${art.number}">0</span>
@@ -446,6 +496,7 @@
       posts.forEach(art => {
         loadReactions(art.number);
         loadComments(art.number);
+        loadPageViews(art.number); // 加载浏览量
         setTimeout(() => checkCollapseNeed(art.number), 0);
       });
     }
@@ -490,6 +541,31 @@
       }
       ch += `<a href="https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
       document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
+    }
+
+    // 加载并增加浏览量（使用CountAPI）
+    async function loadPageViews(issueNum) {
+      const key = `post-${issueNum}`;
+      try {
+        // 先获取当前计数
+        const getRes = await fetch(`${COUNT_API_URL}/get/${COUNT_API_NAMESPACE}/${key}`);
+        let data = await getRes.json();
+        
+        // 如果不存在，初始化计数
+        if (data.error) {
+          const setRes = await fetch(`${COUNT_API_URL}/set/${COUNT_API_NAMESPACE}/${key}?value=1`);
+          data = await setRes.json();
+        } else {
+          // 存在则增加1
+          const hitRes = await fetch(`${COUNT_API_URL}/hit/${COUNT_API_NAMESPACE}/${key}`);
+          data = await hitRes.json();
+        }
+        
+        document.getElementById(`view-${art.number}`).innerText = data.value.toLocaleString();
+      } catch (e) {
+        console.log('浏览量统计出错:', e);
+        document.getElementById(`view-${art.number}`).innerText = "?";
+      }
     }
 
     function openLikePage(issueNum) {
