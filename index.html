@@ -112,10 +112,19 @@
       padding: 35px 0;
       border-bottom: 1px solid var(--border);
     }
+
+    /* 默认：隐藏文章标题 */
     .post h2 {
+      display: none;
       font-size: 26px;
       margin-bottom: 18px;
       color: inherit;
+      font-weight: 600;
+    }
+
+    /* 内容展开后 → 显示标题 */
+    .post-content.expand ~ h2 {
+      display: block;
     }
 
     .post-content {
@@ -299,13 +308,11 @@
 
     // 3. 筛选文章
     function filterPosts(labelName) {
-      // 激活样式
       document.querySelectorAll('.category-item').forEach(item => {
         item.classList.remove('active');
       });
       event.target.classList.add('active');
 
-      // 筛选
       let filtered = allPosts;
       if (labelName !== 'all') {
         filtered = allPosts.filter(post => 
@@ -324,10 +331,10 @@
         posts.forEach(art => {
           html += `
             <div class="post">
-              <h2>${art.title}</h2>
               <div class="post-content" id="body-${art.number}">
                 ${marked.parse(art.body)}
               </div>
+              <h2>${art.title}</h2>
               <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
               <button class="toggle-btn" onclick="toggleComment(${art.number})">展开评论</button>
               <div class="comments" id="cmt-${art.number}">
@@ -339,8 +346,6 @@
         });
       }
       document.getElementById("list").innerHTML = html;
-
-      // 加载评论
       posts.forEach(art => loadComments(art.number));
     }
 
@@ -368,7 +373,7 @@
     // 展开/收起文章
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
-      const btn = el.nextElementSibling;
+      const btn = el.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
       btn.innerText = el.classList.contains("expand") ? "收起" : "阅读全文";
     }
