@@ -1,6 +1,9 @@
 {
     "title":"Blog From Eskiry",
-    "subTitle":"主要是阅读摘抄",
+    "subTitle":"日常",
     "avatarUrl":"https://github.githubassets.com/favicons/favicon.svg",
     "GMEEK_VERSION":"last"
+    "showFullContent": 1,
+    "needComment": 1
+    "summaryLength": 200,
 }
