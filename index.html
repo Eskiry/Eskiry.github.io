@@ -88,14 +88,14 @@
       position: fixed;
       top: 20px;
       right: 5%;
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
       border: none;
       background: var(--btn-bg);
       color: var(--btn-text);
       cursor: pointer;
       font-family: inherit;
-      font-size: 15px;
+      font-size: 14px;
       z-index: 99;
     }
 
@@ -108,27 +108,45 @@
     .post {
       padding: 35px 0;
       border-bottom: 1px solid var(--border);
+      position: relative;
     }
 
-    /* 点赞样式 */
+    /* 右下角悬浮操作栏 */
+    .post-action-bar {
+      position: absolute;
+      right: 0;
+      bottom: 10px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* 超小点赞按钮 */
     .like-box {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      margin: 15px 0;
-      padding: 6px 12px;
+      gap: 4px;
+      padding: 3px 8px;
       background: var(--btn-bg);
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
       color: var(--btn-text);
-      font-size: 15px;
-      transition: transform 0.2s;
-    }
-    .like-box:hover {
-      transform: scale(1.05);
+      font-size: 12px;
     }
     .like-emoji {
-      font-size: 16px;
+      font-size: 13px;
+    }
+
+    /* 小个评论切换按钮 */
+    .cmt-toggle-btn {
+      padding: 3px 8px;
+      background: var(--btn-bg);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--btn-text);
+      font-size: 12px;
+      border: none;
+      font-family: inherit;
     }
 
     .post h2 {
@@ -191,11 +209,11 @@
     .toggle-btn {
       display: none;
       margin: 15px 0 0 0;
-      padding: 8px 18px;
+      padding: 6px 14px;
       background: var(--btn-bg);
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       color: var(--btn-text);
       border: none;
       font-family: inherit;
@@ -203,27 +221,28 @@
     .post-content.collapsible ~ .toggle-btn {
       display: inline-block;
     }
-    .toggle-btn:hover {
-      opacity: 0.9;
-    }
 
+    /* 评论区默认折叠 + 缩小字体 */
     .comments {
-      display: block;
-      padding: 20px;
+      display: none;
+      padding: 12px;
       background: var(--card-bg);
-      border-radius: 10px;
-      margin-top: 20px;
-      max-height: 2000px;
-      overflow: hidden;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .comments.open {
+      display: block;
     }
     .post-content.collapsible:not(.expand) ~ .comments {
       display: none;
     }
 
     .comment {
-      padding: 12px 0;
+      padding: 8px 0;
       border-bottom: 1px solid var(--border);
-      font-size: 17px;
+      font-size: 13px;
+      line-height: 1.6;
     }
     .comment:last-child {
       border-bottom: none;
@@ -231,16 +250,16 @@
     .comment-user {
       font-weight: bold;
       color: var(--btn-text);
-      font-size: 18px;
+      font-size: 14px;
     }
     .comment-content {
-      margin-top: 6px;
-      font-size: 17px;
+      margin-top: 4px;
+      font-size: 13px;
     }
     .jump-comment {
       display: inline-block;
-      margin-top: 12px;
-      font-size: 16px;
+      margin-top: 8px;
+      font-size: 12px;
       color: var(--btn-text);
       text-decoration: none;
     }
@@ -253,20 +272,21 @@
       margin-top: 40px;
     }
     .page-btn {
-      padding: 8px 20px;
-      border-radius: 8px;
+      padding: 6px 16px;
+      border-radius: 6px;
       border: none;
       background: var(--btn-bg);
       color: var(--btn-text);
       cursor: pointer;
       font-family: inherit;
+      font-size: 14px;
     }
     .page-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
     .page-info {
-      font-size: 16px;
+      font-size: 14px;
       color: var(--text);
     }
 
@@ -391,10 +411,15 @@
                 ${marked.parse(art.body)}
               </div>
 
-              <!-- 点赞按钮 -->
-              <div class="like-box" onclick="openLikePage(${art.number})">
-                <span class="like-emoji">👍</span>
-                <span id="like-${art.number}">加载中...</span>
+              <!-- 右下角：点赞 + 评论按钮 -->
+              <div class="post-action-bar">
+                <div class="like-box" onclick="openLikePage(${art.number})">
+                  <span class="like-emoji">👍</span>
+                  <span id="like-${art.number}">0</span>
+                </div>
+                <button class="cmt-toggle-btn" onclick="toggleComment(${art.number})">
+                  <span id="cmt-text-${art.number}">查看评论</span>
+                </button>
               </div>
 
               <h2>${art.title}</h2>
@@ -410,12 +435,24 @@
       document.getElementById("list").innerHTML = html;
       posts.forEach(art => {
         loadComments(art.number);
-        loadReactions(art.number); // 加载点赞数
+        loadReactions(art.number);
         setTimeout(() => checkCollapseNeed(art.number), 0);
       });
     }
 
-    // 加载点赞（👍）数量
+    // 切换评论区展开/折叠
+    function toggleComment(id) {
+      const cmtEl = document.getElementById(`cmt-${id}`);
+      const txtEl = document.getElementById(`cmt-text-${id}`);
+      cmtEl.classList.toggle("open");
+      if(cmtEl.classList.contains("open")){
+        txtEl.innerText = "收起评论";
+      }else{
+        txtEl.innerText = "查看评论";
+      }
+    }
+
+    // 加载点赞数
     async function loadReactions(issueNum) {
       try {
         const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/reactions`);
@@ -427,7 +464,7 @@
       }
     }
 
-    // 打开点赞页面
+    // 跳转点赞
     function openLikePage(issueNum) {
       window.open(`https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}`, '_blank');
     }
@@ -470,7 +507,7 @@
 
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
-      const btn = el.nextElementSibling.nextElementSibling;
+      const btn = el.nextElementSibling.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
       if (el.classList.contains("expand")) {
         el.classList.remove('collapsible');
