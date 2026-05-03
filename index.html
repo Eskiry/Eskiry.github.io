@@ -349,8 +349,8 @@
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
       <div class="site-visit">
-        全站访问：<span id="busuanzi_value_site_pv"></span> 次 · 
-        访客数：<span id="busuanzi_value_site_uv"></span> 人
+        全站访问：<span id="site_pv">0</span> 次 · 
+        访客数：<span id="site_uv">0</span> 人
       </div>
     </div>
   </div>
@@ -363,6 +363,23 @@
     const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
     const MY_GITHUB_USERNAME = "Eskiry";
+
+    // 本地统计逻辑
+    function initLocalStats() {
+      // 访问次数 PV
+      let pv = localStorage.getItem('blog_pv') || 0;
+      pv = Number(pv) + 1;
+      localStorage.setItem('blog_pv', pv);
+      document.getElementById('site_pv').innerText = pv;
+
+      // 访客数 UV（只记录一次）
+      let uv = localStorage.getItem('blog_uv');
+      if (!uv) {
+        uv = 1;
+        localStorage.setItem('blog_uv', uv);
+      }
+      document.getElementById('site_uv').innerText = uv;
+    }
 
     // 默认夜间模式
     const themeBtn = document.getElementById('themeBtn');
@@ -386,16 +403,7 @@
     async function init() {
       await loadLabels();
       await loadPosts();
-      // 页面加载完成后手动初始化不蒜子
-      initBusuanzi();
-    }
-
-    // 手动加载并初始化不蒜子统计
-    function initBusuanzi() {
-      const script = document.createElement('script');
-      script.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
-      script.async = false;
-      document.body.appendChild(script);
+      initLocalStats(); // 替换原来的不蒜子
     }
 
     async function loadLabels() {
@@ -442,7 +450,7 @@
       } else {
         posts.forEach(art => {
           const createdAt = new Date(art.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
-          const updatedAt = new Date(art.updated_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
+          const updatedAt = new Art(art.updated_at).toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'});
           let tagsHtml = "";
           art.labels.forEach(label=>tagsHtml += `<span class="post-tag" onclick="filterPosts('${label.name}')">${label.name}</span>`);
 
