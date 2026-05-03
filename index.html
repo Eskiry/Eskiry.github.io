@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blog From Eskiry</title>
+  <title>Eskiry's Blog</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
@@ -60,31 +60,19 @@
     .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
     .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:18px;transition:.2s}
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
-    .random-btn{
-      padding:10px 15px;
-      margin:10px 0 20px;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:18px;
-      background:var(--btn-bg);
-      color:var(--btn-text);
-      text-align:center;
-      transition:.2s;
-    }
-    .random-btn:hover{opacity:.9;}
-    .main{flex:1;padding:40px 5% 60px}
-    .theme-btn{
-      margin-bottom:12px;
-      padding:6px 12px;
+    .main{flex:1;padding:20px 5% 60px}
+    .theme-btn,.random-mini-btn{
+      margin:4px;
+      padding:5px 10px;
       border-radius:6px;
       border:none;
       background:var(--btn-bg);
       color:var(--btn-text);
       cursor:pointer;
-      font-size:14px;
+      font-size:12px;
       font-family:inherit;
+      display:inline-block;
     }
-    h1{text-align:center;margin-bottom:50px;font-weight:600;font-size:32px}
     .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
     .post-meta{display:none;}
     .post-action-bar{position:absolute;right:0;bottom:10px;display:flex;gap:8px;align-items:center}
@@ -126,21 +114,19 @@
   <div class="container">
     <div class="sidebar" id="sidebar">
       <div class="sidebar-main">
-        <h2>文章分类</h2>
+        <h2>Eskiry's Blog</h2>
         <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
-        <!-- 随机笔记按钮 -->
-        <div class="random-btn" onclick="goRandomPost()">🎲 随机笔记</div>
       </div>
 
       <div class="sidebar-footer">
         <button class="theme-btn" id="themeBtn">日间模式</button>
+        <button class="random-mini-btn" onclick="showRandomPost()">随机</button>
         <div>最新更新：<span id="lastUpdate">加载中...</span></div>
         <div>访问：<span id="site_pv">0</span> 次 · 访客：<span id="site_uv">0</span> 人</div>
       </div>
     </div>
 
     <div class="main">
-      <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
     </div>
@@ -151,11 +137,13 @@
     let currentPage = 1;
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
 
-    // 跳转到随机文章
-    function goRandomPost() {
+    // 随机文章 → 当前页面显示
+    function showRandomPost() {
       if(!allPosts || allPosts.length === 0) return;
-      const random = allPosts[Math.floor(Math.random() * allPosts.length)];
-      window.open(random.html_url, '_blank');
+      const post = allPosts[Math.floor(Math.random() * allPosts.length)];
+      filteredPosts = [post];
+      currentPage = 1;
+      renderPage();
     }
 
     // 本地统计
@@ -163,7 +151,6 @@
       let pv = +localStorage.getItem('pv') + 1 || 1;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
-
       let uv = localStorage.getItem('uv');
       if (!uv) { uv = 1; localStorage.setItem('uv', 1); }
       document.getElementById('site_uv').textContent = uv;
@@ -195,13 +182,11 @@
       initStats();
     }
 
-    // 显示最新更新时间
+    // 最新更新时间
     function showLastUpdate() {
       if (!allPosts.length) return;
       const latest = allPosts.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
-      const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {
-        year: 'numeric', month: '2-digit', day: '2-digit'
-      });
+      const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'});
       document.getElementById('lastUpdate').textContent = time;
     }
 
@@ -250,7 +235,6 @@
       posts.forEach(art => {
         html += `
           <div class="post">
-            <div class="post-meta"></div>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
               <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">👍 <span id="l${art.number}">0</span></div>
@@ -272,8 +256,7 @@
     function toggleBody(id) {
       const el = document.getElementById(`b${id}`), btn = el.nextElementSibling.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
-      if (el.classList.contains("expand")) { el.classList.remove("collapsible"); btn.textContent = "收起"; }
-      else { setTimeout(()=>checkCollapse(id),0); btn.textContent = "阅读全文"; }
+      el.classList.contains("expand") ? (btn.textContent = "收起", el.classList.remove("collapsible")) : (btn.textContent = "阅读全文", setTimeout(()=>checkCollapse(id),0));
     }
 
     async function loadReactions(id) {
@@ -303,8 +286,7 @@
 
     function renderPagination(total) {
       const wrap = document.getElementById('pagination');
-      if (total <= 1) { wrap.innerHTML = ''; return; }
-      wrap.innerHTML = `
+      total <= 1 ? wrap.innerHTML = '' : wrap.innerHTML = `
         <button class="page-btn" onclick="prev()" ${currentPage===1?'disabled':''}>上一页</button>
         <span>${currentPage}/${total}</span>
         <button class="page-btn" onclick="next()" ${currentPage===total?'disabled':''}>下一页</button>`;
