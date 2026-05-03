@@ -110,6 +110,27 @@
       border-bottom: 1px solid var(--border);
     }
 
+    /* 点赞样式 */
+    .like-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 15px 0;
+      padding: 6px 12px;
+      background: var(--btn-bg);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--btn-text);
+      font-size: 15px;
+      transition: transform 0.2s;
+    }
+    .like-box:hover {
+      transform: scale(1.05);
+    }
+    .like-emoji {
+      font-size: 16px;
+    }
+
     .post h2 {
       display: none;
       font-size: 16px;
@@ -187,7 +208,7 @@
     }
 
     .comments {
-      display: none;
+      display: block;
       padding: 20px;
       background: var(--card-bg);
       border-radius: 10px;
@@ -195,8 +216,8 @@
       max-height: 2000px;
       overflow: hidden;
     }
-    .post-content.expand ~ .comments {
-      display: block;
+    .post-content.collapsible:not(.expand) ~ .comments {
+      display: none;
     }
 
     .comment {
@@ -285,7 +306,7 @@
     let allLabels = [];
     let filteredPosts = [];
     let currentPage = 1;
-    const pageSize = 25;     // 每页25篇
+    const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
 
     const themeBtn = document.getElementById('themeBtn');
@@ -369,6 +390,13 @@
               <div class="post-content" id="body-${art.number}">
                 ${marked.parse(art.body)}
               </div>
+
+              <!-- 点赞按钮 -->
+              <div class="like-box" onclick="openLikePage(${art.number})">
+                <span class="like-emoji">👍</span>
+                <span id="like-${art.number}">加载中...</span>
+              </div>
+
               <h2>${art.title}</h2>
               <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
               <div class="comments" id="cmt-${art.number}">
@@ -382,8 +410,26 @@
       document.getElementById("list").innerHTML = html;
       posts.forEach(art => {
         loadComments(art.number);
+        loadReactions(art.number); // 加载点赞数
         setTimeout(() => checkCollapseNeed(art.number), 0);
       });
+    }
+
+    // 加载点赞（👍）数量
+    async function loadReactions(issueNum) {
+      try {
+        const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/reactions`);
+        const reactions = await res.json();
+        const likeCount = reactions.filter(r => r.content === "+1").length;
+        document.getElementById(`like-${issueNum}`).innerText = likeCount;
+      } catch (e) {
+        document.getElementById(`like-${issueNum}`).innerText = "0";
+      }
+    }
+
+    // 打开点赞页面
+    function openLikePage(issueNum) {
+      window.open(`https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}`, '_blank');
     }
 
     function checkCollapseNeed(issueNum) {
