@@ -84,6 +84,7 @@
     .main {
       flex: 1;
       padding: 40px 5%;
+      padding-bottom: 60px;
     }
 
     .theme-btn {
@@ -161,9 +162,6 @@
     }
     .like-box:hover {
       color: var(--btn-text);
-    }
-    .view-box {
-      composes: data-box;
     }
     .cmt-btn {
       composes: data-box;
@@ -318,6 +316,15 @@
       color: var(--text);
     }
 
+    /* 总访问量样式 - 低调不显眼 */
+    .site-total-visit {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 30px;
+      padding-bottom: 20px;
+    }
+
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -346,6 +353,8 @@
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
+      <!-- 总访问量展示位置 -->
+      <div class="site-total-visit" id="totalVisit">加载总访问量...</div>
     </div>
   </div>
 
@@ -357,14 +366,26 @@
     const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
     const MY_GITHUB_USERNAME = "Eskiry";
-    // CountAPI配置 - 用于浏览量统计
-    const COUNT_API_NAMESPACE = "EskiryBlog";
-    const COUNT_API_URL = "https://api.countapi.xyz";
+    
+    // 总访问量 CountAPI 配置
+    const TOTAL_VISIT_API = {
+      namespace: "EskiryBlogTotal",
+      key: "site_total_visit",
+      url: "https://api.countapi.xyz"
+    };
 
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
-    if (savedTheme === 'dark') {
+    
+    // ============== 修改1：默认夜间模式 ==============
+    if (savedTheme === 'light') {
+      // 手动设置过日间模式
+      document.documentElement.removeAttribute('data-theme');
+      themeBtn.innerText = '夜间模式';
+    } else {
+      // 默认：夜间模式（无存储/存储为dark）
       document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('blog-theme', 'dark');
       themeBtn.innerText = "日间模式";
     }
 
@@ -384,6 +405,7 @@
     async function init() {
       await loadLabels();
       await loadPosts();
+      loadTotalSiteVisit(); // 加载总访问量
     }
 
     async function loadLabels() {
@@ -469,10 +491,7 @@
                 ${marked.parse(art.body)}
               </div>
               <div class="post-action-bar">
-                <div class="view-box">
-                  <span>👁️</span>
-                  <span id="view-${art.number}">0</span>
-                </div>
+                <!-- ============== 修改2：删除单篇文章访问量 ============== -->
                 <div class="like-box" onclick="openLikePage(${art.number})">
                   <span>👍</span>
                   <span id="like-${art.number}">0</span>
@@ -496,7 +515,6 @@
       posts.forEach(art => {
         loadReactions(art.number);
         loadComments(art.number);
-        loadPageViews(art.number); // 加载浏览量
         setTimeout(() => checkCollapseNeed(art.number), 0);
       });
     }
@@ -543,28 +561,25 @@
       document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
     }
 
-    // 加载并增加浏览量（使用CountAPI）
-    async function loadPageViews(issueNum) {
-      const key = `post-${issueNum}`;
+    // ============== 修改3：网页总访问量统计 ==============
+    async function loadTotalSiteVisit() {
+      const { namespace, key, url } = TOTAL_VISIT_API;
+      const el = document.getElementById('totalVisit');
       try {
-        // 先获取当前计数
-        const getRes = await fetch(`${COUNT_API_URL}/get/${COUNT_API_NAMESPACE}/${key}`);
+        // 获取/初始化/自增总访问量
+        const getRes = await fetch(`${url}/get/${namespace}/${key}`);
         let data = await getRes.json();
         
-        // 如果不存在，初始化计数
         if (data.error) {
-          const setRes = await fetch(`${COUNT_API_URL}/set/${COUNT_API_NAMESPACE}/${key}?value=1`);
-          data = await setRes.json();
+          await fetch(`${url}/set/${namespace}/${key}?value=1`);
+          data = { value: 1 };
         } else {
-          // 存在则增加1
-          const hitRes = await fetch(`${COUNT_API_URL}/hit/${COUNT_API_NAMESPACE}/${key}`);
-          data = await hitRes.json();
+          await fetch(`${url}/hit/${namespace}/${key}`);
         }
         
-        document.getElementById(`view-${art.number}`).innerText = data.value.toLocaleString();
+        el.innerText = `总访问量：${data.value.toLocaleString()}`;
       } catch (e) {
-        console.log('浏览量统计出错:', e);
-        document.getElementById(`view-${art.number}`).innerText = "?";
+        el.innerText = "总访问量：--";
       }
     }
 
