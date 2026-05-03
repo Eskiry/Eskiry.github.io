@@ -18,6 +18,7 @@
       --mask-end: #fff;
       --btn-bg: #f1f1f1;
       --btn-text: #0969da;
+      --muted: #888;
       --sidebar-bg: #fafafa;
     }
 
@@ -31,6 +32,7 @@
       --mask-end: #121212;
       --btn-bg: #2a2a2a;
       --btn-text: #58a6ff;
+      --muted: #777;
       --sidebar-bg: #1a1a1a;
     }
 
@@ -111,42 +113,50 @@
       position: relative;
     }
 
-    /* 右下角悬浮操作栏 */
+    /* 右下角操作栏 */
     .post-action-bar {
       position: absolute;
       right: 0;
       bottom: 10px;
       display: flex;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
     }
 
-    /* 超小点赞按钮 */
+    /* 迷你点赞按钮 */
     .like-box {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 3px 8px;
+      gap: 3px;
+      padding: 2px 7px;
       background: var(--btn-bg);
       border-radius: 4px;
       cursor: pointer;
-      color: var(--btn-text);
+      color: var(--muted);
       font-size: 12px;
+      transition: color .2s;
     }
-    .like-emoji {
-      font-size: 13px;
+    .like-box:hover {
+      color: var(--btn-text);
     }
 
-    /* 小个评论切换按钮 */
-    .cmt-toggle-btn {
-      padding: 3px 8px;
-      background: var(--btn-bg);
+    /* 迷你评论按钮 低调化 */
+    .cmt-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      background: transparent;
+      border: none;
       border-radius: 4px;
       cursor: pointer;
-      color: var(--btn-text);
+      color: var(--muted);
       font-size: 12px;
-      border: none;
+      transition: color .2s;
       font-family: inherit;
+    }
+    .cmt-btn:hover {
+      color: var(--btn-text);
     }
 
     .post h2 {
@@ -222,7 +232,7 @@
       display: inline-block;
     }
 
-    /* 评论区默认折叠 + 缩小字体 */
+    /* 评论区默认折叠+缩小字体 */
     .comments {
       display: none;
       padding: 12px;
@@ -328,6 +338,7 @@
     let currentPage = 1;
     const pageSize = 25;
     const COLLAPSE_HEIGHT = 640;
+    const MY_GITHUB_USERNAME = "Eskiry";
 
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
@@ -369,7 +380,8 @@
 
     async function loadPosts() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100");
-      allPosts = await res.json();
+      const rawPosts = await res.json();
+      allPosts = rawPosts.filter(post => post.user.login === MY_GITHUB_USERNAME);
       filteredPosts = [...allPosts];
       renderCurrentPage();
     }
@@ -410,18 +422,16 @@
               <div class="post-content" id="body-${art.number}">
                 ${marked.parse(art.body)}
               </div>
-
-              <!-- 右下角：点赞 + 评论按钮 -->
               <div class="post-action-bar">
                 <div class="like-box" onclick="openLikePage(${art.number})">
-                  <span class="like-emoji">👍</span>
+                  <span>👍</span>
                   <span id="like-${art.number}">0</span>
                 </div>
-                <button class="cmt-toggle-btn" onclick="toggleComment(${art.number})">
-                  <span id="cmt-text-${art.number}">查看评论</span>
+                <button class="cmt-btn" onclick="toggleComment(${art.number})">
+                  <span>💬</span>
+                  <span id="cmt-num-${art.number}">0</span>
                 </button>
               </div>
-
               <h2>${art.title}</h2>
               <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
               <div class="comments" id="cmt-${art.number}">
@@ -434,22 +444,16 @@
       }
       document.getElementById("list").innerHTML = html;
       posts.forEach(art => {
-        loadComments(art.number);
         loadReactions(art.number);
+        loadComments(art.number);
         setTimeout(() => checkCollapseNeed(art.number), 0);
       });
     }
 
-    // 切换评论区展开/折叠
+    // 展开/收起评论
     function toggleComment(id) {
       const cmtEl = document.getElementById(`cmt-${id}`);
-      const txtEl = document.getElementById(`cmt-text-${id}`);
       cmtEl.classList.toggle("open");
-      if(cmtEl.classList.contains("open")){
-        txtEl.innerText = "收起评论";
-      }else{
-        txtEl.innerText = "查看评论";
-      }
     }
 
     // 加载点赞数
@@ -464,7 +468,30 @@
       }
     }
 
-    // 跳转点赞
+    // 加载评论 + 赋值评论数量
+    async function loadComments(issueNum) {
+      const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
+      const comments = await res.json();
+      // 更新评论数字
+      document.getElementById(`cmt-num-${issueNum}`).innerText = comments.length;
+
+      let ch = "";
+      if (comments.length === 0) {
+        ch = "<p>暂无评论</p>";
+      } else {
+        comments.forEach(c => {
+          ch += `
+            <div class="comment">
+              <div class="comment-user">${c.user.login}</div>
+              <div class="comment-content">${marked.parse(c.body)}</div>
+            </div>
+          `;
+        });
+      }
+      ch += `<a href="https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
+      document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
+    }
+
     function openLikePage(issueNum) {
       window.open(`https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}`, '_blank');
     }
@@ -483,26 +510,6 @@
       }
       contentEl.style.maxHeight = '';
       contentEl.style.overflow = '';
-    }
-
-    async function loadComments(issueNum) {
-      const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
-      const comments = await res.json();
-      let ch = "";
-      if (comments.length === 0) {
-        ch = "<p>暂无评论</p>";
-      } else {
-        comments.forEach(c => {
-          ch += `
-            <div class="comment">
-              <div class="comment-user">${c.user.login}</div>
-              <div class="comment-content">${marked.parse(c.body)}</div>
-            </div>
-          `;
-        });
-      }
-      ch += `<a href="https://github.com/Eskiry/eskiry.github.io/issues/${issueNum}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>`;
-      document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
     }
 
     function toggleBody(id){
