@@ -44,7 +44,6 @@
       transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* 布局：侧边栏 + 主体 */
     .container {
       display: flex;
       min-height: 100vh;
@@ -52,7 +51,6 @@
       margin: 0 auto;
     }
 
-    /* 侧边栏 */
     .sidebar {
       width: 260px;
       background: var(--sidebar-bg);
@@ -81,7 +79,6 @@
       color: var(--btn-text);
     }
 
-    /* 主体内容 */
     .main {
       flex: 1;
       padding: 40px 5%;
@@ -113,23 +110,23 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* 默认：隐藏文章标题 */
+    /* 默认隐藏标题 */
     .post h2 {
       display: none;
       font-size: 26px;
-      margin-bottom: 18px;
+      margin: 18px 0;
       color: inherit;
       font-weight: 600;
     }
-
-    /* 内容展开后 → 显示标题 */
+    /* 文章展开后显示标题 */
     .post-content.expand ~ h2 {
       display: block;
     }
 
+    /* 摘要高度翻倍 640px */
     .post-content {
       font-size: 18px;
-      max-height: 320px;
+      max-height: 640px;
       overflow: hidden;
       position: relative;
       transition: max-height 0.4s ease;
@@ -169,7 +166,7 @@
 
     .toggle-btn {
       display: inline-block;
-      margin: 15px 12px 22px 0;
+      margin: 15px 0 0 0;
       padding: 8px 18px;
       background: var(--btn-bg);
       border-radius: 8px;
@@ -183,18 +180,21 @@
       opacity: 0.9;
     }
 
+    /* 默认评论完全隐藏，不占位 */
     .comments {
+      display: none;
       padding: 20px;
       background: var(--card-bg);
       border-radius: 10px;
-      margin-top: 12px;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease;
-    }
-    .comments.expand {
+      margin-top: 20px;
       max-height: 2000px;
+      overflow: hidden;
     }
+    /* 文章展开自动显示评论 */
+    .post-content.expand ~ .comments {
+      display: block;
+    }
+
     .comment {
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
@@ -220,7 +220,6 @@
       text-decoration: none;
     }
 
-    /* 移动端适配 */
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -240,13 +239,11 @@
   <button class="theme-btn" id="themeBtn">夜间模式</button>
 
   <div class="container">
-    <!-- 侧边栏分类 -->
     <div class="sidebar" id="sidebar">
       <h2>文章分类</h2>
       <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
     </div>
 
-    <!-- 主体内容 -->
     <div class="main">
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
@@ -254,11 +251,9 @@
   </div>
 
   <script>
-    // 全局数据
     let allPosts = [];
     let allLabels = [];
 
-    // 日夜模式
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
     if (savedTheme === 'dark') {
@@ -279,13 +274,11 @@
       }
     });
 
-    // 初始化：加载标签 + 文章
     async function init() {
       await loadLabels();
       await loadPosts();
     }
 
-    // 1. 加载仓库所有Labels
     async function loadLabels() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/labels");
       allLabels = await res.json();
@@ -299,14 +292,12 @@
       });
     }
 
-    // 2. 加载所有文章
     async function loadPosts() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100");
       allPosts = await res.json();
       renderPosts(allPosts);
     }
 
-    // 3. 筛选文章
     function filterPosts(labelName) {
       document.querySelectorAll('.category-item').forEach(item => {
         item.classList.remove('active');
@@ -322,7 +313,6 @@
       renderPosts(filtered);
     }
 
-    // 4. 渲染文章
     function renderPosts(posts) {
       let html = "";
       if (posts.length === 0) {
@@ -336,7 +326,6 @@
               </div>
               <h2>${art.title}</h2>
               <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
-              <button class="toggle-btn" onclick="toggleComment(${art.number})">展开评论</button>
               <div class="comments" id="cmt-${art.number}">
                 <p>加载评论中...</p>
                 <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 发表评论 →</a>
@@ -349,7 +338,6 @@
       posts.forEach(art => loadComments(art.number));
     }
 
-    // 5. 加载评论
     async function loadComments(issueNum) {
       const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
       const comments = await res.json();
@@ -370,7 +358,7 @@
       document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
     }
 
-    // 展开/收起文章
+    // 展开/收起文章 自动控制评论显示隐藏
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
       const btn = el.nextElementSibling.nextElementSibling;
@@ -378,15 +366,6 @@
       btn.innerText = el.classList.contains("expand") ? "收起" : "阅读全文";
     }
 
-    // 展开/收起评论
-    function toggleComment(id){
-      const el = document.getElementById(`cmt-${id}`);
-      const btn = el.previousElementSibling;
-      el.classList.toggle("expand");
-      btn.innerText = el.classList.contains("expand") ? "收起评论" : "展开评论";
-    }
-
-    // 启动
     init();
   </script>
 </body>
