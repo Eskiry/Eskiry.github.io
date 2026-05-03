@@ -1,93 +1,98 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eskiry's Blog</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blog From Eskiry</title>
   <style>
     * {margin: 0; padding: 0; box-sizing: border-box;}
     body {
-      max-width: 900px;
+      max-width: 850px;
       margin: 0 auto;
-      padding: 30px 20px;
+      padding: 40px 20px;
       font-family: "Noto Sans SC", sans-serif;
-      line-height: 1.9;
+      line-height: 1.8;
       color: #333;
+      background: #fff;
     }
     h1 {
       text-align: center;
-      margin-bottom: 40px;
-      color: #24292e;
+      margin-bottom: 50px;
+      font-weight: 600;
     }
     .post {
-      padding: 25px 0;
+      padding: 30px 0;
       border-bottom: 1px solid #eee;
-      margin-bottom: 20px;
     }
     .post h2 {
-      margin-bottom: 20px;
-      color: #24292e;
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: #222;
     }
     .post-content {
       font-size: 16px;
-      line-height: 1.9;
     }
-    .comment-wrap {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px dashed #ccc;
-    }
-    img {max-width: 100%; border-radius: 6px;}
-    pre {
+    .post-content img {max-width: 100%; border-radius: 6px;}
+    .post-content pre {
       background: #f6f8fa;
       padding: 16px;
       border-radius: 6px;
       overflow-x: auto;
       margin: 15px 0;
     }
-    code {
+    .post-content code {
       background: #f6f8fa;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
+    }
+    /* 评论区样式 */
+    #comment {
+      margin-top: 60px;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <h1>Eskiry's Blog</h1>
-  <div id="blog"></div>
+  <h1>Blog From Eskiry</h1>
+  <div id="list"></div>
+
+  <!-- 全局评论区 -->
+  <div id="comment"></div>
 
   <script>
-    fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?state=all&per_page=100")
-      .then(res => res.json())
-      .then(data => {
-        let html = "";
-        data.forEach(item => {
-          html += `
-            <div class="post">
-              <h2>${item.title}</h2>
-              <div class="post-content">${marked.parse(item.body)}</div>
-              <div class="comment-wrap">
-                <script src="https://giscus.app/client.js"
-                  data-repo="Eskiry/eskiry.github.io"
-                  data-repo-id="R_kgDONRjw5A"
-                  data-category="Announcements"
-                  data-category-id="DIC_kwDONRjw5M4Ck5Yd"
-                  data-mapping="issue-id"
-                  data-issue-id="${item.id}"
-                  data-strict="1"
-                  data-reactions-enabled="1"
-                  data-emit-metadata="0"
-                  data-theme="light"
-                  data-lang="zh-CN"
-                  crossorigin="anonymous" async>
-                </script>
-              </div>
-            </div>
-          `;
-        });
-        document.getElementById("blog").innerHTML = html;
-      })
+    // 加载所有Issue文章，首页直接显示全文
+    fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100")
+    .then(res => res.json())
+    .then(data => {
+      let html = "";
+      data.forEach(art => {
+        html += `
+          <div class="post">
+            <h2>${art.title}</h2>
+            <div class="post-content">${marked.parse(art.body)}</div>
+          </div>
+        `;
+      });
+      document.getElementById("list").innerHTML = html;
+    })
+  </script>
+
+  <!-- Giscus 评论 全局加载 -->
+  <script src="https://giscus.app/client.js"
+    data-repo="Eskiry/eskiry.github.io"
+    data-repo-id="R_kgDONRjw5A"
+    data-category="Announcements"
+    data-category-id="DIC_kwDONRjw5M4Ck5Yd"
+    data-mapping="url"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-theme="light"
+    data-lang="zh-CN"
+    crossorigin="anonymous"
+    async>
   </script>
 </body>
 </html>
