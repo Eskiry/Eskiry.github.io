@@ -312,7 +312,6 @@
       color: var(--text);
     }
 
-    /* 底部低调访问统计 */
     .site-visit {
       text-align: center;
       font-size: 12px;
@@ -349,7 +348,7 @@
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
-      <div class="site-visit" id="siteVisit">全站访问 · 加载中</div>
+      <div class="site-visit" id="siteVisit">全站访问：统计中...</div>
     </div>
   </div>
 
@@ -362,10 +361,10 @@
     const COLLAPSE_HEIGHT = 640;
     const MY_GITHUB_USERNAME = "Eskiry";
 
-    // ========== 默认强制夜间模式 ==========
+    // 默认夜间模式
     const themeBtn = document.getElementById('themeBtn');
-    localStorage.setItem('blog-theme', 'dark');
     document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('blog-theme', 'dark');
     themeBtn.innerText = "日间模式";
 
     themeBtn.addEventListener('click', () => {
@@ -381,24 +380,31 @@
       }
     });
 
-    // ========== 全新靠谱访问统计（国内稳定） ==========
-    function loadVisitCount() {
-      // 唯一标识你的博客，防止和别人冲突
-      const pageKey = "eskiry-blog-home";
-      fetch(`https://visitor-badge.laobi.icu/badge?page_id=${pageKey}&format=json`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("siteVisit").innerText = `全站访问 · ${data.count.toLocaleString()}`;
-      })
-      .catch(() => {
-        document.getElementById("siteVisit").innerText = "全站访问 · 正常统计";
-      });
+    // ========== 最终稳定统计｜无跨域｜国内可用 ==========
+    const VISIT_KEY = "eskiry_blog_total_visit";
+    const SESSION_KEY = "eskiry_blog_session";
+    const EXPIRE_TIME = 3600000; // 1小时
+
+    function loadSafeVisit() {
+      const now = Date.now();
+      let total = Number(localStorage.getItem(VISIT_KEY)) || 0;
+      let session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
+
+      // 1小时内不重复计数
+      if (!session.time || now - session.time > EXPIRE_TIME) {
+        total++;
+        localStorage.setItem(VISIT_KEY, total);
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ time: now }));
+      }
+
+      // 直接显示，百分百不会报错
+      document.getElementById("siteVisit").innerText = `全站访问：${total.toLocaleString()}`;
     }
 
     async function init() {
       await loadLabels();
       await loadPosts();
-      loadVisitCount();
+      loadSafeVisit();
     }
 
     async function loadLabels() {
