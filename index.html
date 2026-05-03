@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Blog From Eskiry</title>
-  <!-- 开源衬线字体 Noto Serif SC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
@@ -35,50 +34,53 @@
 
     * {margin: 0; padding: 0; box-sizing: border-box;}
     body {
-      max-width: 850px;
+      /* 版面全屏自适应，不再固定窄宽度 */
+      max-width: 100%;
       margin: 0 auto;
-      padding: 40px 20px;
-      /* 开源衬线 CJK 字体 */
+      padding: 40px 5%;
+      /* 开源衬线字体 */
       font-family: "Noto Serif SC", serif;
-      line-height: 1.8;
+      line-height: 1.9;
+      /* 全局字体加大 */
+      font-size: 17px;
       background-color: var(--bg);
       color: var(--text);
       transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* 夜间模式按钮 */
     .theme-btn {
       position: fixed;
       top: 20px;
-      right: 20px;
-      padding: 6px 12px;
-      border-radius: 6px;
+      right: 5%;
+      padding: 8px 16px;
+      border-radius: 8px;
       border: none;
       background: var(--btn-bg);
       color: var(--btn-text);
       cursor: pointer;
       font-family: inherit;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     h1 {
       text-align: center;
       margin-bottom: 50px;
       font-weight: 600;
+      font-size: 32px;
     }
     .post {
-      padding: 30px 0;
+      padding: 35px 0;
       border-bottom: 1px solid var(--border);
     }
     .post h2 {
-      font-size: 22px;
-      margin-bottom: 16px;
+      font-size: 26px;
+      margin-bottom: 18px;
       color: inherit;
     }
 
-    /* 调高折叠高度到 320px */
+    /* 折叠高度保持320px */
     .post-content {
-      font-size: 16px;
+      font-size: 18px;
       max-height: 320px;
       overflow: hidden;
       position: relative;
@@ -87,7 +89,6 @@
     .post-content.expand {
       max-height: 3000px;
     }
-    /* 渐变遮罩适配明暗 */
     .post-content::after {
       content: "";
       position: absolute;
@@ -105,25 +106,27 @@
     .post-content img {max-width: 100%; border-radius: 6px;}
     .post-content pre {
       background: var(--code-bg);
-      padding: 16px;
+      padding: 18px;
       border-radius: 6px;
       overflow-x: auto;
-      margin: 15px 0;
+      margin: 18px 0;
+      font-size: 16px;
     }
     .post-content code {
       background: var(--code-bg);
-      padding: 2px 5px;
+      padding: 3px 6px;
       border-radius: 4px;
+      font-size: 16px;
     }
 
     .toggle-btn {
       display: inline-block;
-      margin: 12px 10px 20px 0;
-      padding: 6px 14px;
+      margin: 15px 12px 22px 0;
+      padding: 8px 18px;
       background: var(--btn-bg);
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--btn-text);
       border: none;
       font-family: inherit;
@@ -133,10 +136,10 @@
     }
 
     .comments {
-      padding: 16px;
+      padding: 20px;
       background: var(--card-bg);
-      border-radius: 8px;
-      margin-top: 10px;
+      border-radius: 10px;
+      margin-top: 12px;
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.4s ease;
@@ -145,8 +148,9 @@
       max-height: 2000px;
     }
     .comment {
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid var(--border);
+      font-size: 17px;
     }
     .comment:last-child {
       border-bottom: none;
@@ -154,15 +158,16 @@
     .comment-user {
       font-weight: bold;
       color: var(--btn-text);
+      font-size: 18px;
     }
     .comment-content {
-      margin-top: 5px;
-      font-size: 14px;
+      margin-top: 6px;
+      font-size: 17px;
     }
     .jump-comment {
       display: inline-block;
-      margin-top: 10px;
-      font-size: 14px;
+      margin-top: 12px;
+      font-size: 16px;
       color: var(--btn-text);
       text-decoration: none;
     }
@@ -176,12 +181,11 @@
   <div id="list"></div>
 
   <script>
-    // 夜间模式初始化
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
     if (savedTheme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
-      themeBtn.innerText = 「日间模式」;
+      themeBtn.innerText = "日间模式";
     }
 
     themeBtn.addEventListener('click', () => {
@@ -197,7 +201,6 @@
       }
     });
 
-    // 加载文章与评论
     fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100")
     .then(res => res.json())
     .then(data => {
