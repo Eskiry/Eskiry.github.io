@@ -110,20 +110,21 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* 默认隐藏标题 */
+    /* 🔥 标题优化：比正文小 + 取消加粗 */
     .post h2 {
       display: none;
-      font-size: 26px;
-      margin: 18px 0;
+      font-size: 16px; /* 正文18px，标题更小 */
+      margin: 12px 0;
       color: inherit;
-      font-weight: 600;
+      font-weight: normal; /* 取消加粗 */
+      opacity: 0.85;
     }
     /* 文章展开后显示标题 */
     .post-content.expand ~ h2 {
       display: block;
     }
 
-    /* 摘要高度翻倍 640px */
+    /* 摘要高度 640px */
     .post-content {
       font-size: 18px;
       max-height: 640px;
@@ -180,7 +181,7 @@
       opacity: 0.9;
     }
 
-    /* 默认评论完全隐藏，不占位 */
+    /* 默认评论完全隐藏 */
     .comments {
       display: none;
       padding: 20px;
@@ -220,6 +221,32 @@
       text-decoration: none;
     }
 
+    /* 🔥 分页样式 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 40px;
+    }
+    .page-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .page-info {
+      font-size: 16px;
+      color: var(--text);
+    }
+
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -247,13 +274,20 @@
     <div class="main">
       <h1>Blog From Eskiry</h1>
       <div id="list"></div>
+      <!-- 分页容器 -->
+      <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
   <script>
+    // 全局数据
     let allPosts = [];
     let allLabels = [];
+    let filteredPosts = []; // 筛选后的文章
+    let currentPage = 1;    // 当前页码
+    const pageSize = 10;    // 每页显示10篇文章
 
+    // 日夜模式
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('blog-theme');
     if (savedTheme === 'dark') {
@@ -274,11 +308,13 @@
       }
     });
 
+    // 初始化
     async function init() {
       await loadLabels();
       await loadPosts();
     }
 
+    // 加载标签
     async function loadLabels() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/labels");
       allLabels = await res.json();
@@ -292,27 +328,44 @@
       });
     }
 
+    // 加载文章
     async function loadPosts() {
       const res = await fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?per_page=100");
       allPosts = await res.json();
-      renderPosts(allPosts);
+      filteredPosts = [...allPosts];
+      renderCurrentPage();
     }
 
+    // 筛选文章
     function filterPosts(labelName) {
       document.querySelectorAll('.category-item').forEach(item => {
         item.classList.remove('active');
       });
       event.target.classList.add('active');
 
-      let filtered = allPosts;
-      if (labelName !== 'all') {
-        filtered = allPosts.filter(post => 
+      // 筛选后重置为第一页
+      currentPage = 1;
+      if (labelName === 'all') {
+        filteredPosts = [...allPosts];
+      } else {
+        filteredPosts = allPosts.filter(post => 
           post.labels.some(l => l.name === labelName)
         );
       }
-      renderPosts(filtered);
+      renderCurrentPage();
     }
 
+    // 渲染当前页文章
+    function renderCurrentPage() {
+      const totalPages = Math.ceil(filteredPosts.length / pageSize);
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const currentPosts = filteredPosts.slice(start, end);
+      renderPosts(currentPosts);
+      renderPagination(totalPages);
+    }
+
+    // 渲染文章
     function renderPosts(posts) {
       let html = "";
       if (posts.length === 0) {
@@ -338,6 +391,7 @@
       posts.forEach(art => loadComments(art.number));
     }
 
+    // 加载评论
     async function loadComments(issueNum) {
       const res = await fetch(`https://api.github.com/repos/Eskiry/eskiry.github.io/issues/${issueNum}/comments`);
       const comments = await res.json();
@@ -358,12 +412,46 @@
       document.getElementById(`cmt-${issueNum}`).innerHTML = ch;
     }
 
-    // 展开/收起文章 自动控制评论显示隐藏
+    // 展开/收起文章
     function toggleBody(id){
       const el = document.getElementById(`body-${id}`);
       const btn = el.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
       btn.innerText = el.classList.contains("expand") ? "收起" : "阅读全文";
+    }
+
+    // 🔥 渲染分页按钮
+    function renderPagination(totalPages) {
+      const paginationEl = document.getElementById('pagination');
+      if (totalPages <= 1) {
+        paginationEl.innerHTML = "";
+        return;
+      }
+      paginationEl.innerHTML = `
+        <button class="page-btn" onclick="prevPage()" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
+        <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
+        <button class="page-btn" onclick="nextPage()" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>
+      `;
+    }
+
+    // 上一页
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderCurrentPage();
+        // 滚动到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // 下一页
+    function nextPage() {
+      const totalPages = Math.ceil(filteredPosts.length / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderCurrentPage();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
     init();
