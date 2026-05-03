@@ -70,11 +70,12 @@
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
-    .site-visit{text-align:center;font-size:12px;color:var(--muted);margin-top:10px;user-select:none}
-    .last-update{text-align:center;font-size:12px;color:var(--muted);margin-top:40px;user-select:none}
-    @media (max-width:768px){
-      .container{flex-direction:column}
-      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative}
+    .footer-info{
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:40px;
+      user-select:none;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -92,11 +93,10 @@
       <div id="list"></div>
       <div class="pagination" id="pagination"></div>
       
-      <div class="last-update">
+      <div class="footer-info">
         最新更新：<span id="lastUpdate">加载中...</span>
-      </div>
-      <div class="site-visit">
-        全站访问：<span id="site_pv">0</span> 次 · 访客数：<span id="site_uv">0</span> 人
+        &nbsp;&nbsp;全站访问：<span id="site_pv">0</span> 次
+        &nbsp;&nbsp;访客数：<span id="site_uv">0</span> 人
       </div>
     </div>
   </div>
@@ -146,11 +146,11 @@
     // 显示最新更新时间
     function showLastUpdate() {
       if (!allPosts.length) return;
-      const dates = allPosts.map(p => new Date(p.updated_at));
-      const latest = new Date(Math.max(...dates)).toLocaleDateString('zh-CN', {
+      const latest = allPosts.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
+      const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {
         year: 'numeric', month: '2-digit', day: '2-digit'
       });
-      document.getElementById('lastUpdate').textContent = latest;
+      document.getElementById('lastUpdate').textContent = time;
     }
 
     async function loadLabels() {
