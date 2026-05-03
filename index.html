@@ -1,35 +1,40 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blog From Eskiry</title>
-<style>
-body{max-width:800px;margin:0 auto;padding:20px;font-family:"Noto Sans SC",sans-serif;}
-.post{border-bottom:1px solid #eee;padding:20px 0;}
-.post h2{margin:0 0 10px 0;}
-.post p{line-height:1.8;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eskiry's Blog</title>
+  <style>
+    body { max-width: 800px; margin: 0 auto; padding: 20px; font-family: "Noto Sans SC", sans-serif; line-height: 1.8; }
+    .post { border-bottom: 1px solid #eee; padding: 20px 0; margin-bottom: 20px; }
+    .post h2 { margin: 0 0 15px 0; color: #24292e; }
+    .post-content { color: #24292e; }
+    pre { background: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; }
+    code { background: #f6f8fa; padding: 2px 4px; border-radius: 4px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-<h1>Blog From Eskiry</h1>
-<p>日常</p>
+  <h1>Eskiry's Blog</h1>
+  <div id="posts"></div>
 
-<!-- 下面不用改，以后你发的所有Issue文章都会自动全部显示正文 -->
-<script>
-fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?state=all&per_page=100")
-.then(res=>res.json())
-.then(list=>{
-  list.forEach(issue=>{
-    let div=document.createElement("div");
-    div.className="post";
-    div.innerHTML=`
-      <h2>${issue.title}</h2>
-      <div>${issue.body}</div>
-    `;
-    document.body.appendChild(div);
-  })
-})
-</script>
+  <script>
+    // 拉取你的所有 Issues 并显示全文
+    fetch("https://api.github.com/repos/Eskiry/eskiry.github.io/issues?state=all&per_page=100")
+      .then(res => res.json())
+      .then(posts => {
+        const postsContainer = document.getElementById('posts');
+        posts.forEach(post => {
+          const postDiv = document.createElement('div');
+          postDiv.className = 'post';
+          // 渲染完整 Markdown 内容
+          postDiv.innerHTML = `
+            <h2>${post.title}</h2>
+            <div class="post-content">${marked.parse(post.body)}</div>
+          `;
+          postsContainer.appendChild(postDiv);
+        });
+      });
+  </script>
 </body>
 </html>
