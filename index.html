@@ -100,9 +100,9 @@
       border-radius:4px;
       color:var(--muted);
       font-size:12px;
-      border:none;
       cursor:pointer;
       transition:.2s;
+      border:none;
     }
     .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
     .post-content{font-size:18px;position:relative;transition:max-height .4s}
@@ -160,25 +160,16 @@
   </div>
 
   <script>
-    let allPosts = [], allLabels = [];
+    let allPosts = [], allLabels = [], filteredPosts = [];
     let currentPage = 1;
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
-    let totalPosts = 0; // 总文章数
 
-    // 随机文章（需要先加载全部文章列表）
-    async function showRandomPost() {
-      if(!totalPosts) return;
-      try {
-        const randomPage = Math.ceil(Math.random() * Math.ceil(totalPosts / pageSize));
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${randomPage}`);
-        const data = await res.json();
-        const userPosts = data.filter(p => p.user.login === USER);
-        if(userPosts.length){
-          const post = userPosts[Math.floor(Math.random() * userPosts.length)];
-          renderPosts([post]);
-          document.getElementById('pagination').innerHTML = '';
-        }
-      }catch(e){}
+    function showRandomPost() {
+      if(!allPosts || allPosts.length === 0) return;
+      const post = allPosts[Math.floor(Math.random() * allPosts.length)];
+      filteredPosts = [post];
+      currentPage = 1;
+      renderPage();
     }
 
     function initStats() {
@@ -221,80 +212,52 @@
 
     async function init() {
       await loadLabels();
-      await loadCurrentPagePosts();
+      await loadPosts();
+      showLastUpdate();
       initStats();
     }
 
-    // 只加载当前页的文章
-    async function loadCurrentPagePosts() {
-      document.getElementById('list').innerHTML = "正在加载文章...";
-      try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}`);
-        // 获取总文章数
-        const linkHeader = res.headers.get('link');
-        if(linkHeader){
-          const match = linkHeader.match(/page=(\d+)>; rel="last"/);
-          if(match) totalPosts = parseInt(match[1]) * pageSize;
-        }
-        const data = await res.json();
-        allPosts = data.filter(p => p.user.login === USER);
-        renderPosts(allPosts);
-        renderPagination();
-        showLastUpdate();
-      } catch (e) {
-        document.getElementById('list').innerHTML = "加载失败，请刷新重试";
-      }
-    }
-
-    // 显示最新更新时间
-    async function showLastUpdate() {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=1&page=1`);
-        const data = await res.json();
-        const latest = data.filter(p => p.user.login === USER)[0];
-        if(latest){
-          const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'});
-          document.getElementById('lastUpdate').textContent = time;
-        }
-      }catch(e){}
+    function showLastUpdate() {
+      if (!allPosts.length) return;
+      const latest = allPosts.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
+      const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'});
+      document.getElementById('lastUpdate').textContent = time;
     }
 
     async function loadLabels() {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
-        allLabels = await res.json();
-        const side = document.getElementById('sidebar');
-        allLabels.forEach(l => {
-          const div = document.createElement('div');
-          div.className = 'category-item';
-          div.textContent = l.name;
-          div.onclick = () => filterPosts(l.name);
-          side.querySelector('.sidebar-main').appendChild(div);
-        });
-      }catch(e){}
+      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
+      allLabels = await res.json();
+      const side = document.getElementById('sidebar');
+      allLabels.forEach(l => {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.textContent = l.name;
+        div.onclick = () => filterPosts(l.name);
+        side.querySelector('.sidebar-main').appendChild(div);
+      });
     }
 
-    // 分类筛选（GitHub API 筛选）
-    async function filterPosts(tag) {
+    async function loadPosts() {
+      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=100`);
+      const data = await res.json();
+      allPosts = data.filter(p => p.user.login === USER);
+      filteredPosts = [...allPosts];
+      renderPage();
+    }
+
+    function filterPosts(tag) {
       document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
       event.target.classList.add('active');
       currentPage = 1;
-      document.getElementById('list').innerHTML = "正在加载文章...";
-      
-      if(tag === 'all'){
-        await loadCurrentPagePosts();
-        return;
-      }
-      
-      try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}&labels=${encodeURIComponent(tag)}`);
-        const data = await res.json();
-        allPosts = data.filter(p => p.user.login === USER);
-        renderPosts(allPosts);
-        renderPagination();
-      }catch(e){
-        document.getElementById('list').innerHTML = "加载失败";
-      }
+      filteredPosts = tag === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.some(l => l.name === tag));
+      renderPage();
+    }
+
+    function renderPage() {
+      const total = Math.ceil(filteredPosts.length / pageSize);
+      const start = (currentPage - 1) * pageSize;
+      renderPosts(filteredPosts.slice(start, start + pageSize));
+      renderPagination(total);
     }
 
     function renderPosts(posts) {
@@ -310,7 +273,7 @@
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
               <div class="like-box" onclick="window.open('${art.html_url}','_blank')">♡ <span id="l${art.number}">0</span></div>
-              <div class="cmt-btn" onclick="toggleCmt(${art.number})">◇ <span id="c${art.number}">0</span></div>
+              <div class="cmt-btn" onclick="toggleCmt(${art.number})">♢ <span id="c${art.number}">0</span></div>
             </div>
             <button class="toggle-btn" id="tb${art.number}" onclick="toggleBody(${art.number})">阅读全文</button>
             <div class="comments" id="cmt${art.number}">
@@ -377,23 +340,16 @@
       el.style.maxHeight = '';
     }
 
-    // 分页渲染
-    function renderPagination() {
+    function renderPagination(total) {
       const wrap = document.getElementById('pagination');
-      const total = Math.ceil(totalPosts / pageSize) || 1;
-      if(total <= 1) {
-        wrap.innerHTML = '';
-        return;
-      }
-      wrap.innerHTML = `
+      total <= 1 ? wrap.innerHTML = '' : wrap.innerHTML = `
         <button class="page-btn" onclick="prev()" ${currentPage===1?'disabled':''}>上一页</button>
         <span>${currentPage}/${total}</span>
         <button class="page-btn" onclick="next()" ${currentPage===total?'disabled':''}>下一页</button>`;
     }
 
-    function prev() { currentPage--; loadCurrentPagePosts(); scrollTo({top:0,behavior:'smooth'}) }
-    function next() { currentPage++; loadCurrentPagePosts(); scrollTo({top:0,behavior:'smooth'}) }
-    
+    function prev() { currentPage--; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
+    function next() { currentPage++; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
     init();
   </script>
 </body>
