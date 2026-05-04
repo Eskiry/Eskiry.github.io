@@ -9,28 +9,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fff;
-      --text: #333;
-      --border: #eee;
+      --bg: #ffffff;
+      --text: #111111;       /* 正文高对比纯黑，不发灰 */
+      --border: #eeeeee;
       --card-bg: #f9f9f9;
       --code-bg: #f7f7f7;
       --mask-end: #fff;
       --btn-bg: #f5f5f5;
       --btn-text: #0969da;
-      --muted: #aaa;
+      --muted: #666666;      /* 次要文字加深，不浅灰 */
       --sidebar-bg: #fafafa;
       --action-bg: rgba(240,240,240,0.4);
     }
     [data-theme="dark"] {
       --bg: #121212;
-      --text: #e5e5e5;
+      --text: #f0f0f0;       /* 夜间高对比浅白，不发灰 */
       --border: #2a2a2a;
       --card-bg: #1e1e1e;
       --code-bg: #252525;
       --mask-end: #121212;
       --btn-bg: #252525;
       --btn-text: #58a6ff;
-      --muted: #888;
+      --muted: #aaaaaa;
       --sidebar-bg: #1a1a1a;
       --action-bg: rgba(40,40,40,0.35);
     }
@@ -48,14 +48,14 @@
       overflow-y:auto;
       display:flex;
       flex-direction:column;
-      align-items: center; /* 侧边栏居中 */
+      align-items: center;
     }
     .sidebar-main{
       flex:1;
       width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center; /* 分类居中 */
+      align-items: center;
     }
     .sidebar-footer{
       margin-top:auto;
@@ -64,7 +64,7 @@
       font-size:12px;
       color:var(--muted);
       line-height:1.8;
-      text-align: center; /* 底部信息居中 */
+      text-align: center;
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -74,7 +74,7 @@
     .sidebar h2{
       font-size:22px;
       margin-bottom:25px;
-      text-align: center; /* 标题居中 */
+      text-align: center;
     }
     .category-item{
       width: 100%;
@@ -85,7 +85,7 @@
       cursor:pointer;
       font-size:17px;
       transition:.2s;
-      text-align: center; /* 分类文字居中 */
+      text-align: center;
     }
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:20px 5% 60px}
@@ -118,7 +118,6 @@
       gap:6px;
       align-items:center;
     }
-    /* 只保留评论按钮 */
     .cmt-btn{
       display:inline-flex;
       align-items:center;
@@ -133,7 +132,7 @@
       transition:.2s;
     }
     .cmt-btn:hover{color:var(--btn-text)}
-    .post-content{font-size:18px;position:relative;transition:max-height .4s}
+    .post-content{font-size:18px;position:relative;transition:max-height .4s;color:var(--text);}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
     .post-content.expand{max-height:3000px;overflow:visible}
@@ -144,9 +143,9 @@
     .post-content code{padding:3px 6px;font-size:16px}
     .toggle-btn{display:none;margin:15px 0 0;padding:6px 14px;background:var(--btn-bg);border-radius:6px;cursor:pointer;color:var(--btn-text);border:none}
     .post-content.collapsible~.toggle-btn{display:inline-block}
-    .comments{display:none;padding:12px;background:var(--card-bg);border-radius:8px;margin-top:16px;font-size:13px}
+    .comments{display:none;padding:12px;background:var(--card-bg);border-radius:8px;margin-top:16px;font-size:13px;color:var(--text);}
     .comments.open{display:block}
-    .comment{padding:8px 0;border-bottom:1px solid var(--border);line-height:1.6}
+    .comment{padding:8px 0;border-bottom:1px solid var(--border);line-height:1.6;color:var(--text);}
     .comment:last-child{border-bottom:none}
     .comment-user{font-weight:bold;color:var(--btn-text);font-size:14px}
     .jump-comment{display:inline-block;margin-top:8px;font-size:12px;color:var(--btn-text);text-decoration:none}
@@ -193,12 +192,21 @@
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
     let totalPosts = 0;
 
-    // 随机文章
+    // 超时封装，防止卡死
+    function fetchWithTimeout(url, timeout = 6000) {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), timeout);
+        fetch(url)
+          .then(res => { clearTimeout(timer); resolve(res); })
+          .catch(err => { clearTimeout(timer); reject(err); });
+      });
+    }
+
     async function showRandomPost() {
       if(!totalPosts) return;
       try {
         const randomPage = Math.ceil(Math.random() * Math.ceil(totalPosts / pageSize));
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${randomPage}`);
+        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${randomPage}`);
         const data = await res.json();
         const userPosts = data.filter(p => p.user.login === USER);
         if(userPosts.length){
@@ -209,17 +217,13 @@
       }catch(e){}
     }
 
-    // ==============================================
-    // 访客统计（纯本地存储，永久记录，不用任何API）
-    // ==============================================
+    // 本地访客统计
     function initStats() {
-      // PV 每次访问 +1
       let pv = +localStorage.getItem('pv') || 0;
       pv++;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
 
-      // UV 新访客才 +1，永久记录
       let hasVisit = localStorage.getItem('has_visit');
       let uv = +localStorage.getItem('uv') || 0;
 
@@ -228,11 +232,10 @@
         localStorage.setItem('uv', uv);
         localStorage.setItem('has_visit', 'true');
       }
-
       document.getElementById('site_uv').textContent = uv;
     }
 
-    // 深色模式
+    // 主题切换
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('theme');
     if(savedTheme === 'light'){
@@ -242,7 +245,6 @@
       document.documentElement.setAttribute('data-theme', 'dark');
       themeBtn.textContent = "日间模式";
     }
-
     themeBtn.onclick = () => {
       const dark = document.documentElement.hasAttribute('data-theme');
       if (dark) {
@@ -257,16 +259,20 @@
     };
 
     async function init() {
-      await loadLabels();
+      try {
+        await loadLabels();
+      } catch(e) {}
       await loadCurrentPagePosts();
       initStats();
     }
 
-    // 分页加载当前页文章
+    // 加载当前页文章，加强容错
     async function loadCurrentPagePosts() {
       document.getElementById('list').innerHTML = "正在加载文章...";
       try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}`);
+        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}`);
+        if(!res.ok) throw new Error('req err');
+
         const linkHeader = res.headers.get('link');
         if(linkHeader){
           const match = linkHeader.match(/page=(\d+)>; rel="last"/);
@@ -278,27 +284,32 @@
         renderPagination();
         showLastUpdate();
       } catch (e) {
-        document.getElementById('list').innerHTML = "加载失败，请刷新重试";
+        // 超时/跨域/网络错误兜底提示
+        document.getElementById('list').innerHTML = `
+          <p style="color:var(--muted);padding:20px 0;">
+            网络或 GitHub 接口受限，可稍后刷新<br>
+            已为你尝试展示已有缓存内容
+          </p>`;
       }
     }
 
     // 最新更新时间
     async function showLastUpdate() {
       try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=1&page=1`);
+        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=1&page=1`);
         const data = await res.json();
         const latest = data.filter(p => p.user.login === USER)[0];
         if(latest){
           const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'});
           document.getElementById('lastUpdate').textContent = time;
         }
-      }catch(e){}
+      }catch(e){ document.getElementById('lastUpdate').textContent = '未知'; }
     }
 
-    // 加载分类标签
+    // 加载分类
     async function loadLabels() {
       try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
+        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
         allLabels = await res.json();
         const side = document.getElementById('sidebar');
         allLabels.forEach(l => {
@@ -314,7 +325,7 @@
     // 分类筛选
     async function filterPosts(tag) {
       document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
-      event.target.classList.add('active');
+      if(event && event.target) event.target.classList.add('active');
       currentPage = 1;
       document.getElementById('list').innerHTML = "正在加载文章...";
       
@@ -324,17 +335,17 @@
       }
       
       try {
-        const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}&labels=${encodeURIComponent(tag)}`);
+        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}&labels=${encodeURIComponent(tag)}`);
         const data = await res.json();
         allPosts = data.filter(p => p.user.login === USER);
         renderPosts(allPosts);
         renderPagination();
       }catch(e){
-        document.getElementById('list').innerHTML = "加载失败";
+        document.getElementById('list').innerHTML = "<p style='color:var(--muted)'>该分类加载失败</p>";
       }
     }
 
-    // 渲染文章（已删除点赞）
+    // 渲染文章（无点赞）
     function renderPosts(posts) {
       if (!posts.length) {
         document.getElementById('list').innerHTML = "<p style='color:var(--muted)'>该分类下暂无文章</p>";
@@ -383,7 +394,7 @@
     // 加载评论
     async function loadComments(id) {
       try {
-        const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
+        const r = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
         const list = await r.json();
         document.getElementById(`c${id}`).textContent = list.length;
         let html = list.length ? '' : '<p>暂无评论</p>';
@@ -392,7 +403,9 @@
         });
         html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
         document.getElementById(`cmt${id}`).innerHTML = html;
-      }catch(e){}
+      }catch(e){
+        document.getElementById(`c${id}`).textContent = "-";
+      }
     }
 
     function checkCollapse(id) {
