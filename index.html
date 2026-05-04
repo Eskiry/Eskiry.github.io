@@ -34,7 +34,7 @@
       --sidebar-bg: #1a1a1a;
       --action-bg: rgba(40,40,40,0.35);
     }
-    *{margin:0;padding:0;box-sizing:border-box}
+    *{margin:0;padding:0;box-sizing:border-box;text-align:left;}
     body{font-family:"Noto Serif SC",serif;line-height:1.9;font-size:17px;background:var(--bg);color:var(--text);transition:.3s}
     .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
     .sidebar{
@@ -54,12 +54,11 @@
       margin-top:auto;
       padding-top:20px;
       border-top:1px solid var(--border);
-      text-align:center;
       font-size:12px;
       color:var(--muted);
       line-height:1.8;
     }
-    .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
+    .sidebar h2{font-size:22px;margin-bottom:25px;}
     .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:17px;transition:.2s}
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:20px 5% 60px}
@@ -75,7 +74,7 @@
       font-family:inherit;
       display:inline-block;
     }
-    .loading-tip{text-align:center;padding:60px 0;color:var(--muted);font-size:16px}
+    .loading-tip{padding:60px 0;color:var(--muted);font-size:16px}
     .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
     .post h2{
       font-size:19px;
@@ -84,7 +83,6 @@
       opacity:.98;
       line-height:1.4;
     }
-    /* 右下角操作栏：保留位置、极度弱化低调 */
     .post-action-bar{
       position:absolute;
       right:0;
@@ -93,7 +91,8 @@
       gap:6px;
       align-items:center;
     }
-    .data-box{
+    /* 点赞、评论按钮样式完全统一 */
+    .like-box,.cmt-btn{
       display:inline-flex;
       align-items:center;
       gap:3px;
@@ -103,8 +102,9 @@
       color:var(--muted);
       font-size:12px;
       border:none;
+      cursor:pointer;
+      transition:.2s;
     }
-    .like-box,.cmt-btn{cursor:pointer}
     .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
     .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
@@ -123,7 +123,7 @@
     .comment:last-child{border-bottom:none}
     .comment-user{font-weight:bold;color:var(--btn-text);font-size:14px}
     .jump-comment{display:inline-block;margin-top:8px;font-size:12px;color:var(--btn-text);text-decoration:none}
-    .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
+    .pagination{display:flex;align-items:center;gap:12px;margin-top:40px}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     @media (max-width:768px){
@@ -165,7 +165,6 @@
     let currentPage = 1;
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
 
-    // 随机文章
     function showRandomPost() {
       if(!allPosts || allPosts.length === 0) return;
       const post = allPosts[Math.floor(Math.random() * allPosts.length)];
@@ -174,14 +173,11 @@
       renderPage();
     }
 
-    // 本地PV/UV统计修复
     function initStats() {
-      // PV
       let pv = +localStorage.getItem('pv') + 1 || 1;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
 
-      // UV 生成唯一访客标识
       let uid = localStorage.getItem('site_uid');
       if(!uid){
         uid = 'uv_' + Date.now() + Math.random().toString(36).slice(2);
@@ -192,7 +188,6 @@
       document.getElementById('site_uv').textContent = uv;
     }
 
-    // 主题初始化：读取本地存储，不再强制暗黑
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('theme');
     if(savedTheme === 'light'){
@@ -223,7 +218,6 @@
       initStats();
     }
 
-    // 最新更新时间
     function showLastUpdate() {
       if (!allPosts.length) return;
       const latest = allPosts.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
@@ -269,19 +263,18 @@
 
     function renderPosts(posts) {
       if (!posts.length) {
-        document.getElementById('list').innerHTML = "<p style='text-align:center;margin-top:50px;color:var(--muted)'>该分类下暂无文章</p>";
+        document.getElementById('list').innerHTML = "<p style='color:var(--muted)'>该分类下暂无文章</p>";
         return;
       }
       let html = '';
       posts.forEach(art => {
-        // 改用低调空心爱心代替醒目大拇指，配色更内敛
         html += `
           <div class="post">
             <h2>${art.title}</h2>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
-              <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">♡ <span id="l${art.number}">0</span></div>
-              <button class="data-box cmt-btn" onclick="toggleCmt(${art.number})">💬 <span id="c${art.number}">0</span></button>
+              <div class="like-box" onclick="window.open('${art.html_url}','_blank')">♡ <span id="l${art.number}">0</span></div>
+              <div class="cmt-btn" onclick="toggleCmt(${art.number})">◇ <span id="c${art.number}">0</span></div>
             </div>
             <button class="toggle-btn" id="tb${art.number}" onclick="toggleBody(${art.number})">阅读全文</button>
             <div class="comments" id="cmt${art.number}">
@@ -302,7 +295,6 @@
       document.getElementById(`cmt${id}`).classList.toggle("open") 
     }
 
-    // 修复按钮选取错位，用精准ID获取
     function toggleBody(id) {
       const el = document.getElementById(`b${id}`);
       const btn = document.getElementById(`tb${id}`);
