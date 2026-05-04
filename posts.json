@@ -1,14 +1,12 @@
 [
   {
     "title": "第一篇测试文章",
-    "body": "这里写文章正文，支持 **Markdown** 格式\n\n- 列表项1\n- 列表项2\n\n```js\nconsole.log('代码块测试');\n```",
-    "labels": ["随笔", "技术"],
-    "updated_at": "2025-05-01"
+    "body": "啊啊啊啊",
+    "labels": ["摘录"],
   },
   {
-    "title": "第二篇测试文章",
-    "body": "静态博客无需GitHub API，**永久不限流**，公网稳定访问。",
-    "labels": ["生活"],
-    "updated_at": "2025-05-03"
+    "title": "测试文章",
+    "body": "From Eskiry Github",
+    "labels": ["关于"]
   }
 ]
