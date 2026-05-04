@@ -9,33 +9,39 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fff;
-      --text: #333;
+      --bg: #ffffff;
+      --text: #111111;
       --border: #eee;
       --card-bg: #f9f9f9;
       --code-bg: #f7f7f7;
       --mask-end: #fff;
       --btn-bg: #f5f5f5;
-      --btn-text: #0969da;
-      --muted: #aaa;
+      --btn-text: #0055cc;
+      --muted: #444444;
       --sidebar-bg: #fafafa;
-      --action-bg: rgba(240,240,240,0.4);
     }
     [data-theme="dark"] {
       --bg: #121212;
-      --text: #e5e5e5;
+      --text: #f0f0f0;
       --border: #2a2a2a;
       --card-bg: #1e1e1e;
       --code-bg: #252525;
       --mask-end: #121212;
       --btn-bg: #252525;
-      --btn-text: #58a6ff;
-      --muted: #888;
+      --btn-text: #69b1ff;
+      --muted: #bbbbbb;
       --sidebar-bg: #1a1a1a;
-      --action-bg: rgba(40,40,40,0.35);
     }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:"Noto Serif SC",serif;line-height:1.9;font-size:17px;background:var(--bg);color:var(--text);transition:.3s}
+    body{
+      font-family:"Noto Serif SC",serif;
+      line-height:1.9;
+      font-size:17px;
+      background:var(--bg);
+      color:var(--text);
+      transition:.3s;
+      text-align:left;
+    }
     .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
     .sidebar{
       width:260px;
@@ -62,7 +68,7 @@
     .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
     .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:17px;transition:.2s}
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
-    .main{flex:1;padding:20px 5% 60px}
+    .main{flex:1;padding:20px 5% 60px;text-align:left;}
     .theme-btn,.random-mini-btn{
       margin:4px;
       padding:5px 10px;
@@ -75,36 +81,33 @@
       font-family:inherit;
       display:inline-block;
     }
-    .loading-tip{text-align:center;padding:60px 0;color:var(--muted);font-size:16px}
-    .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
+    .loading-tip{
+      text-align:left;
+      padding:60px 0;
+      color:var(--muted);
+      font-size:16px;
+    }
+    .post{
+      padding:35px 0;
+      border-bottom:1px solid var(--border);
+      position:relative;
+      text-align:left;
+    }
     .post h2{
-      font-size:19px;
+      font-size:20px;
       font-weight:600;
       margin:0 0 18px 0;
-      opacity:.98;
+      color:var(--text);
       line-height:1.4;
+      text-align:left;
     }
-    .post-action-bar{
-      position:absolute;
-      right:0;
-      bottom:10px;
-      display:flex;
-      gap:6px;
-      align-items:center;
+    .post-content{
+      font-size:18px;
+      position:relative;
+      transition:max-height .4s;
+      text-align:left;
+      color:var(--text);
     }
-    .data-box{
-      display:inline-flex;
-      align-items:center;
-      gap:3px;
-      padding:2px 7px;
-      background:var(--action-bg);
-      border-radius:4px;
-      color:var(--muted);
-      font-size:12px;
-      border:none;
-    }
-    .like-box,.cmt-btn{cursor:default}
-    .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
     .post-content.expand{max-height:3000px;overflow:visible}
@@ -113,14 +116,17 @@
     .post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
     .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
     .post-content code{padding:3px 6px;font-size:16px}
-    .toggle-btn{display:none;margin:15px 0 0;padding:6px 14px;background:var(--btn-bg);border-radius:6px;cursor:pointer;color:var(--btn-text);border:none}
+    .toggle-btn{
+      display:none;
+      margin:15px 0 0;
+      padding:6px 14px;
+      background:var(--btn-bg);
+      border-radius:6px;
+      cursor:pointer;
+      color:var(--btn-text);
+      border:none;
+    }
     .post-content.collapsible~.toggle-btn{display:inline-block}
-    .comments{display:none;padding:12px;background:var(--card-bg);border-radius:8px;margin-top:16px;font-size:13px}
-    .comments.open{display:block}
-    .comment{padding:8px 0;border-bottom:1px solid var(--border);line-height:1.6}
-    .comment:last-child{border-bottom:none}
-    .comment-user{font-weight:bold;color:var(--btn-text);font-size:14px}
-    .jump-comment{display:inline-block;margin-top:8px;font-size:12px;color:var(--btn-text);text-decoration:none}
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
@@ -147,8 +153,6 @@
       <div class="sidebar-footer">
         <button class="theme-btn" id="themeBtn">日间模式</button>
         <button class="random-mini-btn" onclick="showRandomPost()">随机</button>
-        <div>最新更新：<span id="lastUpdate">加载中...</span></div>
-        <div>访问：<span id="site_pv">0</span> 次 · 访客：<span id="site_uv">0</span> 人</div>
       </div>
     </div>
 
@@ -170,22 +174,6 @@
       filteredPosts = [post];
       currentPage = 1;
       renderPage();
-    }
-
-    // 本地PV/UV统计
-    function initStats() {
-      let pv = +localStorage.getItem('pv') + 1 || 1;
-      localStorage.setItem('pv', pv);
-      document.getElementById('site_pv').textContent = pv;
-
-      let uid = localStorage.getItem('site_uid');
-      if(!uid){
-        uid = 'uv_' + Date.now() + Math.random().toString(36).slice(2);
-        localStorage.setItem('site_uid', uid);
-        localStorage.setItem('uv', 1);
-      }
-      let uv = +localStorage.getItem('uv') || 1;
-      document.getElementById('site_uv').textContent = uv;
     }
 
     // 主题初始化
@@ -215,25 +203,14 @@
     async function init() {
       await loadLocalPosts();
       renderCategory();
-      showLastUpdate();
-      initStats();
     }
 
-    // 最新更新时间
-    function showLastUpdate() {
-      if (!allPosts.length) return;
-      const latest = allPosts.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
-      const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'});
-      document.getElementById('lastUpdate').textContent = time;
-    }
-
-    // 加载本地 posts.json 代替 GitHub API
+    // 加载本地posts.json 纯静态无API
     async function loadLocalPosts() {
       try {
         const res = await fetch('./posts.json');
         if (!res.ok) throw new Error('读取文章配置失败');
         allPosts = await res.json();
-        // 提取所有分类标签
         let tagSet = new Set();
         allPosts.forEach(p => p.labels.forEach(t => tagSet.add(t)));
         allLabels = Array.from(tagSet);
@@ -241,7 +218,7 @@
         filteredPosts = [...allPosts];
         renderPage();
       } catch (e) {
-        document.getElementById('list').innerHTML = `<p style='text-align:center;margin-top:50px;color:var(--muted)'>加载失败：${e.message}<br>请检查 posts.json 文件是否存在</p>`;
+        document.getElementById('list').innerHTML = `<p style='text-align:left;margin-top:50px;color:var(--text)'>加载失败：${e.message}<br>请检查 posts.json 文件是否存在</p>`;
       }
     }
 
@@ -275,7 +252,7 @@
 
     function renderPosts(posts) {
       if (!posts.length) {
-        document.getElementById('list').innerHTML = "<p style='text-align:center;margin-top:50px;color:var(--muted)'>该分类下暂无文章</p>";
+        document.getElementById('list').innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>该分类下暂无文章</p>";
         return;
       }
       let html = '';
@@ -285,14 +262,7 @@
           <div class="post">
             <h2>${art.title}</h2>
             <div class="post-content" id="b${id}">${marked.parse(art.body)}</div>
-            <div class="post-action-bar">
-              <div class="data-box like-box">♡ <span>0</span></div>
-              <button class="data-box cmt-btn" onclick="toggleCmt(${id})">💬 <span>0</span></button>
-            </div>
             <button class="toggle-btn" id="tb${id}" onclick="toggleBody(${id})">阅读全文</button>
-            <div class="comments" id="cmt${id}">
-              <p>静态博客暂无评论功能</p>
-            </div>
           </div>`;
       });
       document.getElementById('list').innerHTML = html;
@@ -300,10 +270,6 @@
         const id = idx + 1;
         setTimeout(()=>checkCollapse(id),0) 
       });
-    }
-
-    function toggleCmt(id) { 
-      document.getElementById(`cmt${id}`).classList.toggle("open") 
     }
 
     function toggleBody(id) {
