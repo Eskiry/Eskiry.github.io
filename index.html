@@ -48,8 +48,15 @@
       overflow-y:auto;
       display:flex;
       flex-direction:column;
+      align-items: center; /* 侧边栏居中 */
     }
-    .sidebar-main{flex:1;}
+    .sidebar-main{
+      flex:1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* 分类居中 */
+    }
     .sidebar-footer{
       margin-top:auto;
       padding-top:20px;
@@ -57,9 +64,29 @@
       font-size:12px;
       color:var(--muted);
       line-height:1.8;
+      text-align: center; /* 底部信息居中 */
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
-    .sidebar h2{font-size:22px;margin-bottom:25px;}
-    .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:17px;transition:.2s}
+    .sidebar h2{
+      font-size:22px;
+      margin-bottom:25px;
+      text-align: center; /* 标题居中 */
+    }
+    .category-item{
+      width: 100%;
+      max-width: 220px;
+      padding:10px 15px;
+      margin:6px 0;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:17px;
+      transition:.2s;
+      text-align: center; /* 分类文字居中 */
+    }
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:20px 5% 60px}
     .theme-btn,.random-mini-btn{
@@ -91,7 +118,8 @@
       gap:6px;
       align-items:center;
     }
-    .like-box,.cmt-btn{
+    /* 只保留评论按钮 */
+    .cmt-btn{
       display:inline-flex;
       align-items:center;
       gap:3px;
@@ -104,7 +132,7 @@
       cursor:pointer;
       transition:.2s;
     }
-    .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
+    .cmt-btn:hover{color:var(--btn-text)}
     .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
@@ -127,9 +155,9 @@
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     @media (max-width:768px){
       .container{flex-direction:column}
-      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative;padding:20px 15px}
-      .category-item{font-size:18px;padding:12px 15px}
-      .sidebar-footer{margin-top:20px;padding-top:15px;}
+      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative;padding:20px 15px;align-items: center;}
+      .category-item{font-size:18px;padding:12px 15px;max-width: 100%;}
+      .sidebar-footer{margin-top:20px;padding-top:15px;text-align:center;}
       .main{padding:15px 4% 40px}
       .post{padding:25px 0}
     }
@@ -163,9 +191,9 @@
     let allPosts = [], allLabels = [];
     let currentPage = 1;
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
-    let totalPosts = 0; // 总文章数
+    let totalPosts = 0;
 
-    // 随机文章（需要先加载全部文章列表）
+    // 随机文章
     async function showRandomPost() {
       if(!totalPosts) return;
       try {
@@ -181,21 +209,30 @@
       }catch(e){}
     }
 
+    // ==============================================
+    // 访客统计（纯本地存储，永久记录，不用任何API）
+    // ==============================================
     function initStats() {
-      let pv = +localStorage.getItem('pv') + 1 || 1;
+      // PV 每次访问 +1
+      let pv = +localStorage.getItem('pv') || 0;
+      pv++;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
 
-      let uid = localStorage.getItem('site_uid');
-      if(!uid){
-        uid = 'uv_' + Date.now() + Math.random().toString(36).slice(2);
-        localStorage.setItem('site_uid', uid);
-        localStorage.setItem('uv', 1);
+      // UV 新访客才 +1，永久记录
+      let hasVisit = localStorage.getItem('has_visit');
+      let uv = +localStorage.getItem('uv') || 0;
+
+      if (!hasVisit) {
+        uv++;
+        localStorage.setItem('uv', uv);
+        localStorage.setItem('has_visit', 'true');
       }
-      let uv = +localStorage.getItem('uv') || 1;
+
       document.getElementById('site_uv').textContent = uv;
     }
 
+    // 深色模式
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('theme');
     if(savedTheme === 'light'){
@@ -225,12 +262,11 @@
       initStats();
     }
 
-    // 只加载当前页的文章
+    // 分页加载当前页文章
     async function loadCurrentPagePosts() {
       document.getElementById('list').innerHTML = "正在加载文章...";
       try {
         const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}`);
-        // 获取总文章数
         const linkHeader = res.headers.get('link');
         if(linkHeader){
           const match = linkHeader.match(/page=(\d+)>; rel="last"/);
@@ -246,7 +282,7 @@
       }
     }
 
-    // 显示最新更新时间
+    // 最新更新时间
     async function showLastUpdate() {
       try {
         const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=1&page=1`);
@@ -259,6 +295,7 @@
       }catch(e){}
     }
 
+    // 加载分类标签
     async function loadLabels() {
       try {
         const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
@@ -274,7 +311,7 @@
       }catch(e){}
     }
 
-    // 分类筛选（GitHub API 筛选）
+    // 分类筛选
     async function filterPosts(tag) {
       document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
       event.target.classList.add('active');
@@ -297,6 +334,7 @@
       }
     }
 
+    // 渲染文章（已删除点赞）
     function renderPosts(posts) {
       if (!posts.length) {
         document.getElementById('list').innerHTML = "<p style='color:var(--muted)'>该分类下暂无文章</p>";
@@ -309,7 +347,6 @@
             <h2>${art.title}</h2>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
-              <div class="like-box" onclick="window.open('${art.html_url}','_blank')">♡ <span id="l${art.number}">0</span></div>
               <div class="cmt-btn" onclick="toggleCmt(${art.number})">◇ <span id="c${art.number}">0</span></div>
             </div>
             <button class="toggle-btn" id="tb${art.number}" onclick="toggleBody(${art.number})">阅读全文</button>
@@ -321,7 +358,6 @@
       });
       document.getElementById('list').innerHTML = html;
       posts.forEach(art => { 
-        loadReactions(art.number); 
         loadComments(art.number); 
         setTimeout(()=>checkCollapse(art.number),0) 
       });
@@ -344,26 +380,19 @@
       }
     }
 
-    async function loadReactions(id) {
-      try {
-        const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/reactions`);
-        const data = await r.json();
-        document.getElementById(`l${id}`).textContent = data.filter(x=>x.content==="+1").length;
-      } catch(e) { 
-        document.getElementById(`l${id}`).textContent = "0" 
-      }
-    }
-
+    // 加载评论
     async function loadComments(id) {
-      const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
-      const list = await r.json();
-      document.getElementById(`c${id}`).textContent = list.length;
-      let html = list.length ? '' : '<p>暂无评论</p>';
-      list.forEach(c => { 
-        html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` 
-      });
-      html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
-      document.getElementById(`cmt${id}`).innerHTML = html;
+      try {
+        const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
+        const list = await r.json();
+        document.getElementById(`c${id}`).textContent = list.length;
+        let html = list.length ? '' : '<p>暂无评论</p>';
+        list.forEach(c => { 
+          html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` 
+        });
+        html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
+        document.getElementById(`cmt${id}`).innerHTML = html;
+      }catch(e){}
     }
 
     function checkCollapse(id) {
@@ -377,7 +406,7 @@
       el.style.maxHeight = '';
     }
 
-    // 分页渲染
+    // 分页
     function renderPagination() {
       const wrap = document.getElementById('pagination');
       const total = Math.ceil(totalPosts / pageSize) || 1;
