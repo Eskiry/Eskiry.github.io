@@ -9,28 +9,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #ffffff;
-      --text: #111111;       /* 正文高对比纯黑，不发灰 */
-      --border: #eeeeee;
+      --bg: #fff;
+      --text: #000000;        /* 超高对比 纯黑 */
+      --border: #eee;
       --card-bg: #f9f9f9;
       --code-bg: #f7f7f7;
       --mask-end: #fff;
       --btn-bg: #f5f5f5;
       --btn-text: #0969da;
-      --muted: #666666;      /* 次要文字加深，不浅灰 */
+      --muted: #555;
       --sidebar-bg: #fafafa;
       --action-bg: rgba(240,240,240,0.4);
     }
     [data-theme="dark"] {
       --bg: #121212;
-      --text: #f0f0f0;       /* 夜间高对比浅白，不发灰 */
+      --text: #ffffff;        /* 超高对比 纯白 */
       --border: #2a2a2a;
       --card-bg: #1e1e1e;
       --code-bg: #252525;
       --mask-end: #121212;
       --btn-bg: #252525;
       --btn-text: #58a6ff;
-      --muted: #aaaaaa;
+      --muted: #ccc;
       --sidebar-bg: #1a1a1a;
       --action-bg: rgba(40,40,40,0.35);
     }
@@ -52,10 +52,10 @@
     }
     .sidebar-main{
       flex:1;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
     }
     .sidebar-footer{
       margin-top:auto;
@@ -64,28 +64,24 @@
       font-size:12px;
       color:var(--muted);
       line-height:1.8;
-      text-align: center;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+      text-align:center;
+      width:100%;
     }
     .sidebar h2{
       font-size:22px;
       margin-bottom:25px;
-      text-align: center;
+      text-align:center;
     }
     .category-item{
-      width: 100%;
-      max-width: 220px;
+      width:100%;
+      max-width:220px;
       padding:10px 15px;
       margin:6px 0;
       border-radius:8px;
       cursor:pointer;
       font-size:17px;
       transition:.2s;
-      text-align: center;
+      text-align:center;
     }
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:20px 5% 60px}
@@ -98,8 +94,6 @@
       color:var(--btn-text);
       cursor:pointer;
       font-size:12px;
-      font-family:inherit;
-      display:inline-block;
     }
     .loading-tip{padding:60px 0;color:var(--muted);font-size:16px}
     .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
@@ -107,7 +101,6 @@
       font-size:19px;
       font-weight:600;
       margin:0 0 18px 0;
-      opacity:.98;
       line-height:1.4;
     }
     .post-action-bar{
@@ -116,7 +109,6 @@
       bottom:10px;
       display:flex;
       gap:6px;
-      align-items:center;
     }
     .cmt-btn{
       display:inline-flex;
@@ -129,10 +121,9 @@
       font-size:12px;
       border:none;
       cursor:pointer;
-      transition:.2s;
     }
     .cmt-btn:hover{color:var(--btn-text)}
-    .post-content{font-size:18px;position:relative;transition:max-height .4s;color:var(--text);}
+    .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
     .post-content.expand{max-height:3000px;overflow:visible}
@@ -143,20 +134,20 @@
     .post-content code{padding:3px 6px;font-size:16px}
     .toggle-btn{display:none;margin:15px 0 0;padding:6px 14px;background:var(--btn-bg);border-radius:6px;cursor:pointer;color:var(--btn-text);border:none}
     .post-content.collapsible~.toggle-btn{display:inline-block}
-    .comments{display:none;padding:12px;background:var(--card-bg);border-radius:8px;margin-top:16px;font-size:13px;color:var(--text);}
+    .comments{display:none;padding:12px;background:var(--card-bg);border-radius:8px;margin-top:16px;font-size:13px}
     .comments.open{display:block}
-    .comment{padding:8px 0;border-bottom:1px solid var(--border);line-height:1.6;color:var(--text);}
+    .comment{padding:8px 0;border-bottom:1px solid var(--border);line-height:1.6}
     .comment:last-child{border-bottom:none}
     .comment-user{font-weight:bold;color:var(--btn-text);font-size:14px}
-    .jump-comment{display:inline-block;margin-top:8px;font-size:12px;color:var(--btn-text);text-decoration:none}
+    .jump-comment{display:inline-block;margin-top:8px;font-size:12px;color:var(--btn-text)}
     .pagination{display:flex;align-items:center;gap:12px;margin-top:40px}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     @media (max-width:768px){
       .container{flex-direction:column}
-      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative;padding:20px 15px;align-items: center;}
-      .category-item{font-size:18px;padding:12px 15px;max-width: 100%;}
-      .sidebar-footer{margin-top:20px;padding-top:15px;text-align:center;}
+      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative;padding:20px 15px;align-items:center}
+      .category-item{font-size:18px;padding:12px 15px;max-width:100%}
+      .sidebar-footer{margin-top:20px;padding-top:15px;text-align:center}
       .main{padding:15px 4% 40px}
       .post{padding:25px 0}
     }
@@ -187,46 +178,27 @@
   </div>
 
   <script>
-    let allPosts = [], allLabels = [];
+    let allPosts = [], allLabels = [], filteredPosts = [];
     let currentPage = 1;
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
-    let totalPosts = 0;
 
-    // 超时封装，防止卡死
-    function fetchWithTimeout(url, timeout = 6000) {
-      return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('timeout')), timeout);
-        fetch(url)
-          .then(res => { clearTimeout(timer); resolve(res); })
-          .catch(err => { clearTimeout(timer); reject(err); });
-      });
+    // 随机文章
+    function showRandomPost() {
+      if(!allPosts || allPosts.length === 0) return;
+      const post = allPosts[Math.floor(Math.random() * allPosts.length)];
+      filteredPosts = [post];
+      currentPage = 1;
+      renderPage();
     }
 
-    async function showRandomPost() {
-      if(!totalPosts) return;
-      try {
-        const randomPage = Math.ceil(Math.random() * Math.ceil(totalPosts / pageSize));
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${randomPage}`);
-        const data = await res.json();
-        const userPosts = data.filter(p => p.user.login === USER);
-        if(userPosts.length){
-          const post = userPosts[Math.floor(Math.random() * userPosts.length)];
-          renderPosts([post]);
-          document.getElementById('pagination').innerHTML = '';
-        }
-      }catch(e){}
-    }
-
-    // 本地访客统计
+    // 本地访客统计（永久保存）
     function initStats() {
-      let pv = +localStorage.getItem('pv') || 0;
-      pv++;
+      let pv = +localStorage.getItem('pv') + 1 || 1;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
 
       let hasVisit = localStorage.getItem('has_visit');
       let uv = +localStorage.getItem('uv') || 0;
-
       if (!hasVisit) {
         uv++;
         localStorage.setItem('uv', uv);
@@ -258,97 +230,66 @@
       }
     };
 
+    // 初始化
     async function init() {
-      try {
-        await loadLabels();
-      } catch(e) {}
-      await loadCurrentPagePosts();
+      await loadLabels();
+      await loadPosts();
+      showLastUpdate();
       initStats();
     }
 
-    // 加载当前页文章，加强容错
-    async function loadCurrentPagePosts() {
-      document.getElementById('list').innerHTML = "正在加载文章...";
-      try {
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}`);
-        if(!res.ok) throw new Error('req err');
-
-        const linkHeader = res.headers.get('link');
-        if(linkHeader){
-          const match = linkHeader.match(/page=(\d+)>; rel="last"/);
-          if(match) totalPosts = parseInt(match[1]) * pageSize;
-        }
-        const data = await res.json();
-        allPosts = data.filter(p => p.user.login === USER);
-        renderPosts(allPosts);
-        renderPagination();
-        showLastUpdate();
-      } catch (e) {
-        // 超时/跨域/网络错误兜底提示
-        document.getElementById('list').innerHTML = `
-          <p style="color:var(--muted);padding:20px 0;">
-            网络或 GitHub 接口受限，可稍后刷新<br>
-            已为你尝试展示已有缓存内容
-          </p>`;
-      }
-    }
-
     // 最新更新时间
-    async function showLastUpdate() {
-      try {
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=1&page=1`);
-        const data = await res.json();
-        const latest = data.filter(p => p.user.login === USER)[0];
-        if(latest){
-          const time = new Date(latest.updated_at).toLocaleDateString('zh-CN', {year: 'numeric', month: '2-digit', day: '2-digit'});
-          document.getElementById('lastUpdate').textContent = time;
-        }
-      }catch(e){ document.getElementById('lastUpdate').textContent = '未知'; }
+    function showLastUpdate() {
+      if (!allPosts.length) return;
+      const latest = allPosts.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
+      const time = new Date(latest.updated_at).toLocaleDateString('zh-CN');
+      document.getElementById('lastUpdate').textContent = time;
     }
 
-    // 加载分类
+    // 加载标签
     async function loadLabels() {
-      try {
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
-        allLabels = await res.json();
-        const side = document.getElementById('sidebar');
-        allLabels.forEach(l => {
-          const div = document.createElement('div');
-          div.className = 'category-item';
-          div.textContent = l.name;
-          div.onclick = () => filterPosts(l.name);
-          side.querySelector('.sidebar-main').appendChild(div);
-        });
-      }catch(e){}
+      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
+      allLabels = await res.json();
+      const side = document.getElementById('sidebar');
+      allLabels.forEach(l => {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.textContent = l.name;
+        div.onclick = () => filterPosts(l.name);
+        side.querySelector('.sidebar-main').appendChild(div);
+      });
+    }
+
+    // 加载所有文章（你原来能用的版本）
+    async function loadPosts() {
+      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=100`);
+      const data = await res.json();
+      allPosts = data.filter(p => p.user.login === USER);
+      filteredPosts = [...allPosts];
+      renderPage();
     }
 
     // 分类筛选
-    async function filterPosts(tag) {
+    function filterPosts(tag) {
       document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
-      if(event && event.target) event.target.classList.add('active');
+      event.target.classList.add('active');
       currentPage = 1;
-      document.getElementById('list').innerHTML = "正在加载文章...";
-      
-      if(tag === 'all'){
-        await loadCurrentPagePosts();
-        return;
-      }
-      
-      try {
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=${pageSize}&page=${currentPage}&labels=${encodeURIComponent(tag)}`);
-        const data = await res.json();
-        allPosts = data.filter(p => p.user.login === USER);
-        renderPosts(allPosts);
-        renderPagination();
-      }catch(e){
-        document.getElementById('list').innerHTML = "<p style='color:var(--muted)'>该分类加载失败</p>";
-      }
+      filteredPosts = tag === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.some(l => l.name === tag));
+      renderPage();
     }
 
-    // 渲染文章（无点赞）
+    // 渲染分页
+    function renderPage() {
+      const total = Math.ceil(filteredPosts.length / pageSize);
+      const start = (currentPage - 1) * pageSize;
+      renderPosts(filteredPosts.slice(start, start + pageSize));
+      renderPagination(total);
+    }
+
+    // 渲染文章（已删除点赞）
     function renderPosts(posts) {
       if (!posts.length) {
-        document.getElementById('list').innerHTML = "<p style='color:var(--muted)'>该分类下暂无文章</p>";
+        document.getElementById('list').innerHTML = "<p>该分类下暂无文章</p>";
         return;
       }
       let html = '';
@@ -363,7 +304,7 @@
             <button class="toggle-btn" id="tb${art.number}" onclick="toggleBody(${art.number})">阅读全文</button>
             <div class="comments" id="cmt${art.number}">
               <p>加载评论中...</p>
-              <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>
+              <a href="${art.html_url}" target="_blank">去 GitHub 评论 →</a>
             </div>
           </div>`;
       });
@@ -374,68 +315,44 @@
       });
     }
 
-    function toggleCmt(id) { 
-      document.getElementById(`cmt${id}`).classList.toggle("open") 
-    }
-
+    function toggleCmt(id) { document.getElementById(`cmt${id}`).classList.toggle("open") }
     function toggleBody(id) {
       const el = document.getElementById(`b${id}`);
       const btn = document.getElementById(`tb${id}`);
       el.classList.toggle("expand");
-      if(el.classList.contains("expand")){
-        btn.textContent = "收起";
-        el.classList.remove("collapsible");
-      }else{
-        btn.textContent = "阅读全文";
-        setTimeout(()=>checkCollapse(id),0);
-      }
+      el.classList.contains("expand") ? btn.textContent = "收起" : btn.textContent = "阅读全文";
     }
 
     // 加载评论
     async function loadComments(id) {
-      try {
-        const r = await fetchWithTimeout(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
-        const list = await r.json();
-        document.getElementById(`c${id}`).textContent = list.length;
-        let html = list.length ? '' : '<p>暂无评论</p>';
-        list.forEach(c => { 
-          html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` 
-        });
-        html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
-        document.getElementById(`cmt${id}`).innerHTML = html;
-      }catch(e){
-        document.getElementById(`c${id}`).textContent = "-";
-      }
+      const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
+      const list = await r.json();
+      document.getElementById(`c${id}`).textContent = list.length;
+      let html = list.length ? '' : '<p>暂无评论</p>';
+      list.forEach(c => { html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div>${marked.parse(c.body)}</div></div>` });
+      html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank">去 GitHub 评论 →</a>`;
+      document.getElementById(`cmt${id}`).innerHTML = html;
     }
 
+    // 自动折叠
     function checkCollapse(id) {
       const el = document.getElementById(`b${id}`);
       el.style.maxHeight = 'none';
-      if (el.scrollHeight > COLLAPSE_HEIGHT) {
-        el.classList.add("collapsible");
-      } else {
-        el.classList.remove("collapsible");
-      }
+      el.scrollHeight > COLLAPSE_HEIGHT ? el.classList.add("collapsible") : el.classList.remove("collapsible");
       el.style.maxHeight = '';
     }
 
-    // 分页
-    function renderPagination() {
+    // 分页按钮
+    function renderPagination(total) {
       const wrap = document.getElementById('pagination');
-      const total = Math.ceil(totalPosts / pageSize) || 1;
-      if(total <= 1) {
-        wrap.innerHTML = '';
-        return;
-      }
-      wrap.innerHTML = `
+      total <= 1 ? wrap.innerHTML = '' : wrap.innerHTML = `
         <button class="page-btn" onclick="prev()" ${currentPage===1?'disabled':''}>上一页</button>
         <span>${currentPage}/${total}</span>
         <button class="page-btn" onclick="next()" ${currentPage===total?'disabled':''}>下一页</button>`;
     }
+    function prev() { currentPage--; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
+    function next() { currentPage++; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
 
-    function prev() { currentPage--; loadCurrentPagePosts(); scrollTo({top:0,behavior:'smooth'}) }
-    function next() { currentPage++; loadCurrentPagePosts(); scrollTo({top:0,behavior:'smooth'}) }
-    
     init();
   </script>
 </body>
