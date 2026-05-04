@@ -79,8 +79,8 @@
     .data-box{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--btn-bg);border-radius:4px;color:var(--muted);font-size:12px}
     .like-box,.cmt-btn{cursor:pointer}
     .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
-    .post h2{display:none;font-size:16px;margin:12px 0;opacity:.85}
-    .post-content.expand~h2{display:block}
+    /* 调整后的文章标题样式：前置、加粗、同正文大小 */
+    .post h2{font-size:18px; font-weight: 600; margin: 0 0 15px 0; opacity:.95;}
     .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
@@ -235,12 +235,13 @@
       posts.forEach(art => {
         html += `
           <div class="post">
+            <!-- 标题已移到文章最前方 -->
+            <h2>${art.title}</h2>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
               <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">👍 <span id="l${art.number}">0</span></div>
               <button class="data-box cmt-btn" onclick="toggleCmt(${art.number})">💬 <span id="c${art.number}">0</span></button>
             </div>
-            <h2>${art.title}</h2>
             <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
             <div class="comments" id="cmt${art.number}">
               <p>加载评论中...</p>
@@ -254,7 +255,7 @@
 
     function toggleCmt(id) { document.getElementById(`cmt${id}`).classList.toggle("open") }
     function toggleBody(id) {
-      const el = document.getElementById(`b${id}`), btn = el.nextElementSibling.nextElementSibling.nextElementSibling;
+      const el = document.getElementById(`b${id}`), btn = el.nextElementSibling.nextElementSibling;
       el.classList.toggle("expand");
       el.classList.contains("expand") ? (btn.textContent = "收起", el.classList.remove("collapsible")) : (btn.textContent = "阅读全文", setTimeout(()=>checkCollapse(id),0));
     }
