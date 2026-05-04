@@ -84,7 +84,6 @@
       opacity:.98;
       line-height:1.4;
     }
-    /* 右下角操作栏：保留位置、极度弱化低调 */
     .post-action-bar{
       position:absolute;
       right:0;
@@ -104,8 +103,7 @@
       font-size:12px;
       border:none;
     }
-    .like-box,.cmt-btn{cursor:pointer}
-    .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
+    .like-box,.cmt-btn{cursor:default}
     .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
@@ -163,7 +161,7 @@
   <script>
     let allPosts = [], allLabels = [], filteredPosts = [];
     let currentPage = 1;
-    const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
+    const pageSize = 25, COLLAPSE_HEIGHT = 640;
 
     // 随机文章
     function showRandomPost() {
@@ -174,14 +172,12 @@
       renderPage();
     }
 
-    // 本地PV/UV统计修复
+    // 本地PV/UV统计
     function initStats() {
-      // PV
       let pv = +localStorage.getItem('pv') + 1 || 1;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
 
-      // UV 生成唯一访客标识
       let uid = localStorage.getItem('site_uid');
       if(!uid){
         uid = 'uv_' + Date.now() + Math.random().toString(36).slice(2);
@@ -192,7 +188,7 @@
       document.getElementById('site_uv').textContent = uv;
     }
 
-    // 主题初始化：读取本地存储，不再强制暗黑
+    // 主题初始化
     const themeBtn = document.getElementById('themeBtn');
     const savedTheme = localStorage.getItem('theme');
     if(savedTheme === 'light'){
@@ -217,8 +213,8 @@
     };
 
     async function init() {
-      await loadLabels();
-      await loadPosts();
+      await loadLocalPosts();
+      renderCategory();
       showLastUpdate();
       initStats();
     }
@@ -231,32 +227,42 @@
       document.getElementById('lastUpdate').textContent = time;
     }
 
-    async function loadLabels() {
-      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/labels`);
-      allLabels = await res.json();
-      const side = document.getElementById('sidebar');
-      allLabels.forEach(l => {
+    // 加载本地 posts.json 代替 GitHub API
+    async function loadLocalPosts() {
+      try {
+        const res = await fetch('./posts.json');
+        if (!res.ok) throw new Error('读取文章配置失败');
+        allPosts = await res.json();
+        // 提取所有分类标签
+        let tagSet = new Set();
+        allPosts.forEach(p => p.labels.forEach(t => tagSet.add(t)));
+        allLabels = Array.from(tagSet);
+
+        filteredPosts = [...allPosts];
+        renderPage();
+      } catch (e) {
+        document.getElementById('list').innerHTML = `<p style='text-align:center;margin-top:50px;color:var(--muted)'>加载失败：${e.message}<br>请检查 posts.json 文件是否存在</p>`;
+      }
+    }
+
+    // 渲染侧边栏分类
+    function renderCategory() {
+      const side = document.getElementById('sidebar').querySelector('.sidebar-main');
+      allLabels.forEach(tag => {
         const div = document.createElement('div');
         div.className = 'category-item';
-        div.textContent = l.name;
-        div.onclick = () => filterPosts(l.name);
-        side.querySelector('.sidebar-main').appendChild(div);
+        div.textContent = tag;
+        div.onclick = () => filterPosts(tag);
+        side.appendChild(div);
       });
     }
 
-    async function loadPosts() {
-      const res = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues?per_page=100`);
-      const data = await res.json();
-      allPosts = data.filter(p => p.user.login === USER);
-      filteredPosts = [...allPosts];
-      renderPage();
-    }
-
+    // 分类筛选
     function filterPosts(tag) {
       document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
       event.target.classList.add('active');
       currentPage = 1;
-      filteredPosts = tag === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.some(l => l.name === tag));
+      filteredPosts = tag === 'all' ? [...allPosts] : allPosts.filter(p => p.labels.includes(tag));
       renderPage();
     }
 
@@ -273,28 +279,26 @@
         return;
       }
       let html = '';
-      posts.forEach(art => {
-        // 改用低调空心爱心代替醒目大拇指，配色更内敛
+      posts.forEach((art, idx) => {
+        const id = idx + 1;
         html += `
           <div class="post">
             <h2>${art.title}</h2>
-            <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
+            <div class="post-content" id="b${id}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
-              <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">♡ <span id="l${art.number}">0</span></div>
-              <button class="data-box cmt-btn" onclick="toggleCmt(${art.number})">💬 <span id="c${art.number}">0</span></button>
+              <div class="data-box like-box">♡ <span>0</span></div>
+              <button class="data-box cmt-btn" onclick="toggleCmt(${id})">💬 <span>0</span></button>
             </div>
-            <button class="toggle-btn" id="tb${art.number}" onclick="toggleBody(${art.number})">阅读全文</button>
-            <div class="comments" id="cmt${art.number}">
-              <p>加载评论中...</p>
-              <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>
+            <button class="toggle-btn" id="tb${id}" onclick="toggleBody(${id})">阅读全文</button>
+            <div class="comments" id="cmt${id}">
+              <p>静态博客暂无评论功能</p>
             </div>
           </div>`;
       });
       document.getElementById('list').innerHTML = html;
-      posts.forEach(art => { 
-        loadReactions(art.number); 
-        loadComments(art.number); 
-        setTimeout(()=>checkCollapse(art.number),0) 
+      posts.forEach((_, idx) => { 
+        const id = idx + 1;
+        setTimeout(()=>checkCollapse(id),0) 
       });
     }
 
@@ -302,7 +306,6 @@
       document.getElementById(`cmt${id}`).classList.toggle("open") 
     }
 
-    // 修复按钮选取错位，用精准ID获取
     function toggleBody(id) {
       const el = document.getElementById(`b${id}`);
       const btn = document.getElementById(`tb${id}`);
@@ -314,28 +317,6 @@
         btn.textContent = "阅读全文";
         setTimeout(()=>checkCollapse(id),0);
       }
-    }
-
-    async function loadReactions(id) {
-      try {
-        const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/reactions`);
-        const data = await r.json();
-        document.getElementById(`l${id}`).textContent = data.filter(x=>x.content==="+1").length;
-      } catch(e) { 
-        document.getElementById(`l${id}`).textContent = "0" 
-      }
-    }
-
-    async function loadComments(id) {
-      const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/comments`);
-      const list = await r.json();
-      document.getElementById(`c${id}`).textContent = list.length;
-      let html = list.length ? '' : '<p>暂无评论</p>';
-      list.forEach(c => { 
-        html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` 
-      });
-      html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
-      document.getElementById(`cmt${id}`).innerHTML = html;
     }
 
     function checkCollapse(id) {
