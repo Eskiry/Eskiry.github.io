@@ -127,17 +127,10 @@
       border:none;
     }
     .post-content.collapsible~.toggle-btn{display:inline-block}
-    .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px}
+    .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
-    @media (max-width:768px){
-      .container{flex-direction:column}
-      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative;padding:20px 15px}
-      .category-item{font-size:18px;padding:12px 15px}
-      .sidebar-footer{margin-top:20px;padding-top:15px;}
-      .main{padding:15px 4% 40px}
-      .post{padding:25px 0}
-    }
+    .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -296,12 +289,37 @@
       el.style.maxHeight = '';
     }
 
+    // 跳转到指定页
+    function jumpToPage() {
+      const total = Math.ceil(filteredPosts.length / pageSize);
+      const input = document.getElementById('jumpInput');
+      let page = parseInt(input.value.trim());
+      
+      if (isNaN(page)) return;
+      page = Math.max(1, Math.min(page, total));
+      currentPage = page;
+      renderPage();
+      scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function renderPagination(total) {
       const wrap = document.getElementById('pagination');
-      total <= 1 ? wrap.innerHTML = '' : wrap.innerHTML = `
-        <button class="page-btn" onclick="prev()" ${currentPage===1?'disabled':''}>上一页</button>
+      if (total <= 1) {
+        wrap.innerHTML = '';
+        return;
+      }
+      
+      wrap.innerHTML = `
+        <button class="page-btn" onclick="prev()" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
         <span>${currentPage}/${total}</span>
-        <button class="page-btn" onclick="next()" ${currentPage===total?'disabled':''}>下一页</button>`;
+        <button class="page-btn" onclick="next()" ${currentPage === total ? 'disabled' : ''}>下一页</button>
+        <input type="number" class="jump-input" id="jumpInput" min="1" max="${total}" placeholder="页码" />
+        <button class="page-btn" onclick="jumpToPage()">跳转</button>
+      `;
+      // 输入框回车跳转
+      document.getElementById('jumpInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') jumpToPage();
+      });
     }
 
     function prev() { currentPage--; renderPage(); scrollTo({top:0,behavior:'smooth'}) }
