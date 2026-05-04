@@ -13,24 +13,26 @@
       --text: #333;
       --border: #eee;
       --card-bg: #f9f9f9;
-      --code-bg: #f6f8fa;
+      --code-bg: #f7f7f7;
       --mask-end: #fff;
-      --btn-bg: #f1f1f1;
+      --btn-bg: #f5f5f5;
       --btn-text: #0969da;
-      --muted: #888;
+      --muted: #aaa;
       --sidebar-bg: #fafafa;
+      --action-bg: rgba(240,240,240,0.4);
     }
     [data-theme="dark"] {
       --bg: #121212;
       --text: #e5e5e5;
       --border: #2a2a2a;
       --card-bg: #1e1e1e;
-      --code-bg: #2b2b2b;
+      --code-bg: #252525;
       --mask-end: #121212;
-      --btn-bg: #2a2a2a;
+      --btn-bg: #252525;
       --btn-text: #58a6ff;
-      --muted: #777;
+      --muted: #888;
       --sidebar-bg: #1a1a1a;
+      --action-bg: rgba(40,40,40,0.35);
     }
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:"Noto Serif SC",serif;line-height:1.9;font-size:17px;background:var(--bg);color:var(--text);transition:.3s}
@@ -58,7 +60,7 @@
       line-height:1.8;
     }
     .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
-    .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:18px;transition:.2s}
+    .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:17px;transition:.2s}
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:20px 5% 60px}
     .theme-btn,.random-mini-btn{
@@ -73,14 +75,37 @@
       font-family:inherit;
       display:inline-block;
     }
+    .loading-tip{text-align:center;padding:60px 0;color:var(--muted);font-size:16px}
     .post{padding:35px 0;border-bottom:1px solid var(--border);position:relative}
-    .post-meta{display:none;}
-    .post-action-bar{position:absolute;right:0;bottom:10px;display:flex;gap:8px;align-items:center}
-    .data-box{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--btn-bg);border-radius:4px;color:var(--muted);font-size:12px}
+    .post h2{
+      font-size:19px;
+      font-weight:600;
+      margin:0 0 18px 0;
+      opacity:.98;
+      line-height:1.4;
+    }
+    /* 右下角操作栏：保留位置、极度弱化低调 */
+    .post-action-bar{
+      position:absolute;
+      right:0;
+      bottom:10px;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .data-box{
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:2px 7px;
+      background:var(--action-bg);
+      border-radius:4px;
+      color:var(--muted);
+      font-size:12px;
+      border:none;
+    }
     .like-box,.cmt-btn{cursor:pointer}
     .like-box:hover,.cmt-btn:hover{color:var(--btn-text)}
-    /* 调整后的文章标题样式：前置、加粗、同正文大小 */
-    .post h2{font-size:18px; font-weight: 600; margin: 0 0 15px 0; opacity:.95;}
     .post-content{font-size:18px;position:relative;transition:max-height .4s}
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
@@ -103,8 +128,11 @@
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     @media (max-width:768px){
       .container{flex-direction:column}
-      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative}
+      .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);position:relative;padding:20px 15px}
+      .category-item{font-size:18px;padding:12px 15px}
       .sidebar-footer{margin-top:20px;padding-top:15px;}
+      .main{padding:15px 4% 40px}
+      .post{padding:25px 0}
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -127,7 +155,7 @@
     </div>
 
     <div class="main">
-      <div id="list"></div>
+      <div id="list" class="loading-tip">正在加载文章...</div>
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
@@ -137,7 +165,7 @@
     let currentPage = 1;
     const pageSize = 25, COLLAPSE_HEIGHT = 640, USER = "Eskiry";
 
-    // 随机文章 → 当前页面显示
+    // 随机文章
     function showRandomPost() {
       if(!allPosts || allPosts.length === 0) return;
       const post = allPosts[Math.floor(Math.random() * allPosts.length)];
@@ -146,21 +174,34 @@
       renderPage();
     }
 
-    // 本地统计
+    // 本地PV/UV统计修复
     function initStats() {
+      // PV
       let pv = +localStorage.getItem('pv') + 1 || 1;
       localStorage.setItem('pv', pv);
       document.getElementById('site_pv').textContent = pv;
-      let uv = localStorage.getItem('uv');
-      if (!uv) { uv = 1; localStorage.setItem('uv', 1); }
+
+      // UV 生成唯一访客标识
+      let uid = localStorage.getItem('site_uid');
+      if(!uid){
+        uid = 'uv_' + Date.now() + Math.random().toString(36).slice(2);
+        localStorage.setItem('site_uid', uid);
+        localStorage.setItem('uv', 1);
+      }
+      let uv = +localStorage.getItem('uv') || 1;
       document.getElementById('site_uv').textContent = uv;
     }
 
-    // 主题切换
+    // 主题初始化：读取本地存储，不再强制暗黑
     const themeBtn = document.getElementById('themeBtn');
-    document.documentElement.setAttribute('data-theme', 'dark');
-    localStorage.setItem('theme', 'dark');
-    themeBtn.textContent = "日间模式";
+    const savedTheme = localStorage.getItem('theme');
+    if(savedTheme === 'light'){
+      document.documentElement.removeAttribute('data-theme');
+      themeBtn.textContent = "夜间模式";
+    }else{
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeBtn.textContent = "日间模式";
+    }
 
     themeBtn.onclick = () => {
       const dark = document.documentElement.hasAttribute('data-theme');
@@ -228,21 +269,21 @@
 
     function renderPosts(posts) {
       if (!posts.length) {
-        document.getElementById('list').innerHTML = "<p style='text-align:center;margin-top:50px;'>该分类下暂无文章</p>";
+        document.getElementById('list').innerHTML = "<p style='text-align:center;margin-top:50px;color:var(--muted)'>该分类下暂无文章</p>";
         return;
       }
       let html = '';
       posts.forEach(art => {
+        // 改用低调空心爱心代替醒目大拇指，配色更内敛
         html += `
           <div class="post">
-            <!-- 标题已移到文章最前方 -->
             <h2>${art.title}</h2>
             <div class="post-content" id="b${art.number}">${marked.parse(art.body)}</div>
             <div class="post-action-bar">
-              <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">👍 <span id="l${art.number}">0</span></div>
+              <div class="data-box like-box" onclick="window.open('${art.html_url}','_blank')">♡ <span id="l${art.number}">0</span></div>
               <button class="data-box cmt-btn" onclick="toggleCmt(${art.number})">💬 <span id="c${art.number}">0</span></button>
             </div>
-            <button class="toggle-btn" onclick="toggleBody(${art.number})">阅读全文</button>
+            <button class="toggle-btn" id="tb${art.number}" onclick="toggleBody(${art.number})">阅读全文</button>
             <div class="comments" id="cmt${art.number}">
               <p>加载评论中...</p>
               <a href="${art.html_url}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>
@@ -250,14 +291,29 @@
           </div>`;
       });
       document.getElementById('list').innerHTML = html;
-      posts.forEach(art => { loadReactions(art.number); loadComments(art.number); setTimeout(()=>checkCollapse(art.number),0) });
+      posts.forEach(art => { 
+        loadReactions(art.number); 
+        loadComments(art.number); 
+        setTimeout(()=>checkCollapse(art.number),0) 
+      });
     }
 
-    function toggleCmt(id) { document.getElementById(`cmt${id}`).classList.toggle("open") }
+    function toggleCmt(id) { 
+      document.getElementById(`cmt${id}`).classList.toggle("open") 
+    }
+
+    // 修复按钮选取错位，用精准ID获取
     function toggleBody(id) {
-      const el = document.getElementById(`b${id}`), btn = el.nextElementSibling.nextElementSibling;
+      const el = document.getElementById(`b${id}`);
+      const btn = document.getElementById(`tb${id}`);
       el.classList.toggle("expand");
-      el.classList.contains("expand") ? (btn.textContent = "收起", el.classList.remove("collapsible")) : (btn.textContent = "阅读全文", setTimeout(()=>checkCollapse(id),0));
+      if(el.classList.contains("expand")){
+        btn.textContent = "收起";
+        el.classList.remove("collapsible");
+      }else{
+        btn.textContent = "阅读全文";
+        setTimeout(()=>checkCollapse(id),0);
+      }
     }
 
     async function loadReactions(id) {
@@ -265,7 +321,9 @@
         const r = await fetch(`https://api.github.com/repos/${USER}/${USER}.github.io/issues/${id}/reactions`);
         const data = await r.json();
         document.getElementById(`l${id}`).textContent = data.filter(x=>x.content==="+1").length;
-      } catch(e) { document.getElementById(`l${id}`).textContent = "0" }
+      } catch(e) { 
+        document.getElementById(`l${id}`).textContent = "0" 
+      }
     }
 
     async function loadComments(id) {
@@ -273,7 +331,9 @@
       const list = await r.json();
       document.getElementById(`c${id}`).textContent = list.length;
       let html = list.length ? '' : '<p>暂无评论</p>';
-      list.forEach(c => { html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` });
+      list.forEach(c => { 
+        html += `<div class="comment"><div class="comment-user">${c.user.login}</div><div class="comment-content">${marked.parse(c.body)}</div></div>` 
+      });
       html += `<a href="https://github.com/${USER}/${USER}.github.io/issues/${id}" target="_blank" class="jump-comment">去 GitHub 评论 →</a>`;
       document.getElementById(`cmt${id}`).innerHTML = html;
     }
@@ -281,7 +341,11 @@
     function checkCollapse(id) {
       const el = document.getElementById(`b${id}`);
       el.style.maxHeight = 'none';
-      if (el.scrollHeight > COLLAPSE_HEIGHT) el.classList.add("collapsible");
+      if (el.scrollHeight > COLLAPSE_HEIGHT) {
+        el.classList.add("collapsible");
+      } else {
+        el.classList.remove("collapsible");
+      }
       el.style.maxHeight = '';
     }
 
