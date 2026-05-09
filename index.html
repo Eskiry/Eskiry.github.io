@@ -131,6 +131,54 @@
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
+
+    /* ====================== 移动端适配（核心修改） ====================== */
+    @media (max-width: 768px) {
+      /* 布局改为纵向排列 */
+      .container {
+        flex-direction: column;
+      }
+      /* 侧边栏全屏宽度，取消固定高度/粘性定位 */
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 20px 15px;
+        overflow-y: visible;
+      }
+      /* 侧边栏标题缩小间距 */
+      .sidebar h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+      /* 分类项横向紧凑排列 */
+      .category-item {
+        display: inline-block;
+        margin: 4px 6px;
+        padding: 6px 10px;
+        font-size: 15px;
+      }
+      /* 分类居中 */
+      .sidebar-main {
+        text-align: center;
+      }
+      /* 主内容区缩小内边距 */
+      .main {
+        padding: 20px 15px 40px;
+      }
+      /* 文章卡片适配 */
+      .post {
+        padding: 25px 0;
+      }
+      .post h2 {
+        font-size: 18px;
+      }
+      .post-content {
+        font-size: 16px;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
