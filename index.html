@@ -131,6 +131,25 @@
     .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
+
+    /* 只加这一段：移动端仅缩小侧边栏宽度，不改动任何样式风格 */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 110px;
+        padding: 20px 10px;
+      }
+      .sidebar h2 {
+        font-size: 16px;
+      }
+      .category-item {
+        padding: 8px 6px;
+        font-size: 14px;
+        text-align: center;
+      }
+      .main {
+        padding: 20px 3% 60px;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
