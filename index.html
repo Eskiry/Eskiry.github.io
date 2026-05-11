@@ -43,10 +43,12 @@
       text-align:left;
     }
     .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
+
+    /* 1. 压缩侧边栏宽度到 200px */
     .sidebar{
-      width:260px;
+      width:200px;
       background:var(--sidebar-bg);
-      padding:40px 20px;
+      padding:40px 15px;
       border-right:1px solid var(--border);
       position:sticky;
       top:0;
@@ -54,6 +56,10 @@
       overflow-y:auto;
       display:flex;
       flex-direction:column;
+      /* 全部内容居中 */
+      text-align:center;
+      transition: transform 0.3s ease;
+      z-index: 99;
     }
     .sidebar-main{flex:1;}
     .sidebar-footer{
@@ -69,10 +75,18 @@
       gap: 8px;
     }
     .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
-    .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:17px;transition:.2s}
+    .category-item{
+      padding:10px 12px;
+      margin:6px auto;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:17px;
+      transition:.2s;
+      width: 90%;
+    }
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
-    .main{flex:1;padding:20px 5% 60px;text-align:left;}
-    
+    .main{flex:1;padding:20px 5% 60px;text-align:left;transition: margin-left 0.3s;}
+
     .theme-btn,.random-mini-btn{
       padding:5px 10px;
       border-radius:6px;
@@ -93,9 +107,26 @@
       font-family:inherit;
       outline: none;
       width: 100%;
+      margin: 0 auto;
     }
     .search-input:focus{
       border-color: var(--btn-text);
+    }
+
+    /* 侧边栏折叠按钮 */
+    .sidebar-toggle{
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 100;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      font-size: 14px;
+      display: none;
     }
 
     .loading-tip{
@@ -149,17 +180,28 @@
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
 
+    /* 移动端：小屏自动折叠侧边栏 */
     @media (max-width: 768px) {
+      .sidebar-toggle{display: block;}
       .container {flex-direction: column;}
+      /* 默认隐藏侧边栏 */
       .sidebar {
-        width: 100%;height: auto;position: relative;
-        border-right: none;border-bottom: 1px solid var(--border);
-        padding:20px 15px;overflow-y: visible;
+        width: 200px;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        border-right: 1px solid var(--border);
+        border-bottom: none;
       }
-      .sidebar h2 {font-size: 20px;margin-bottom: 15px;}
-      .category-item {display: inline-block;margin: 4px 6px;padding: 6px 10px;font-size: 15px;}
-      .sidebar-main {text-align: center;}
-      .main {padding: 20px 15px 40px;}
+      /* 侧边栏展开状态 */
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main {
+        padding: 20px 15px 40px;
+      }
       .post {padding: 25px 0;}
       .post h2 {font-size: 18px;}
       .post-content {font-size: 16px;}
@@ -169,6 +211,9 @@
 </head>
 
 <body>
+  <!-- 移动端折叠按钮 -->
+  <button class="sidebar-toggle" id="sidebarToggle">菜单</button>
+
   <div class="container">
     <div class="sidebar" id="sidebar">
       <div class="sidebar-main">
@@ -194,6 +239,11 @@
     var currentPage = 1;
     var pageSize = 25, COLLAPSE_HEIGHT = 640;
     var searchInput = null;
+
+    // 侧边栏折叠切换
+    document.getElementById('sidebarToggle').onclick = function(){
+      document.getElementById('sidebar').classList.toggle('show');
+    };
 
     function showRandomPost() {
       if(!allPosts || allPosts.length === 0) return;
@@ -332,7 +382,6 @@
       renderPagination(total);
     }
 
-    // ✅ 核心修复：将\n替换为<br>，网页完美换行
     function renderPosts(posts) {
       if (posts.length === 0) {
         document.getElementById('list').innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>暂无匹配的文章</p>";
@@ -342,7 +391,6 @@
       for (var i = 0; i < posts.length; i++) {
         var art = posts[i];
         var id = i + 1;
-        // 关键：把正文的换行符\n 替换成 HTML 换行标签 <br>
         var bodyWithBr = art.body.replace(/\n/g, '<br>');
         html += '<div class="post"><h2>' + art.title + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
       }
