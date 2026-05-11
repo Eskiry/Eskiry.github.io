@@ -64,13 +64,16 @@
       font-size:12px;
       color:var(--muted);
       line-height:1.8;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
     .category-item{padding:10px 15px;margin:6px 0;border-radius:8px;cursor:pointer;font-size:17px;transition:.2s}
     .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
     .main{flex:1;padding:20px 5% 60px;text-align:left;}
+    
     .theme-btn,.random-mini-btn{
-      margin:4px;
       padding:5px 10px;
       border-radius:6px;
       border:none;
@@ -79,8 +82,22 @@
       cursor:pointer;
       font-size:12px;
       font-family:inherit;
-      display:inline-block;
     }
+    .search-input{
+      padding:5px 10px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:var(--btn-bg);
+      color:var(--text);
+      font-size:12px;
+      font-family:inherit;
+      outline: none;
+      width: 100%;
+    }
+    .search-input:focus{
+      border-color: var(--btn-text);
+    }
+
     .loading-tip{
       text-align:left;
       padding:60px 0;
@@ -132,52 +149,20 @@
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
 
-    /* ====================== 移动端适配（核心修改） ====================== */
     @media (max-width: 768px) {
-      /* 布局改为纵向排列 */
-      .container {
-        flex-direction: column;
-      }
-      /* 侧边栏全屏宽度，取消固定高度/粘性定位 */
+      .container {flex-direction: column;}
       .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        padding: 20px 15px;
-        overflow-y: visible;
+        width: 100%;height: auto;position: relative;
+        border-right: none;border-bottom: 1px solid var(--border);
+        padding:20px 15px;overflow-y: visible;
       }
-      /* 侧边栏标题缩小间距 */
-      .sidebar h2 {
-        font-size: 20px;
-        margin-bottom: 15px;
-      }
-      /* 分类项横向紧凑排列 */
-      .category-item {
-        display: inline-block;
-        margin: 4px 6px;
-        padding: 6px 10px;
-        font-size: 15px;
-      }
-      /* 分类居中 */
-      .sidebar-main {
-        text-align: center;
-      }
-      /* 主内容区缩小内边距 */
-      .main {
-        padding: 20px 15px 40px;
-      }
-      /* 文章卡片适配 */
-      .post {
-        padding: 25px 0;
-      }
-      .post h2 {
-        font-size: 18px;
-      }
-      .post-content {
-        font-size: 16px;
-      }
+      .sidebar h2 {font-size: 20px;margin-bottom: 15px;}
+      .category-item {display: inline-block;margin: 4px 6px;padding: 6px 10px;font-size: 15px;}
+      .sidebar-main {text-align: center;}
+      .main {padding: 20px 15px 40px;}
+      .post {padding: 25px 0;}
+      .post h2 {font-size: 18px;}
+      .post-content {font-size: 16px;}
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -192,6 +177,7 @@
       </div>
 
       <div class="sidebar-footer">
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索标题/正文关键词...">
         <button class="theme-btn" id="themeBtn">日间模式</button>
         <button class="random-mini-btn" onclick="showRandomPost()">随机</button>
       </div>
@@ -204,12 +190,11 @@
   </div>
 
   <script>
-    // 全部改为 ES5 语法，兼容老旧浏览器
     var allPosts = [], allLabels = [], filteredPosts = [];
     var currentPage = 1;
     var pageSize = 25, COLLAPSE_HEIGHT = 640;
+    var searchInput = null;
 
-    // 随机文章
     function showRandomPost() {
       if(!allPosts || allPosts.length === 0) return;
       var post = allPosts[Math.floor(Math.random() * allPosts.length)];
@@ -218,7 +203,6 @@
       renderPage();
     }
 
-    // 主题初始化
     var themeBtn = document.getElementById('themeBtn');
     var savedTheme = localStorage.getItem('theme');
     if(savedTheme === 'light'){
@@ -242,11 +226,34 @@
       }
     };
 
-    function init() {
-      loadLocalPosts();
+    function initSearch() {
+      searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', function() {
+        doSearch();
+      });
     }
 
-    // 用 XHR 替代 fetch，100% 兼容老旧浏览器
+    function doSearch() {
+      var keyword = searchInput.value.trim().toLowerCase();
+      currentPage = 1;
+      if (!keyword) {
+        filteredPosts = allPosts.slice();
+        renderPage();
+        return;
+      }
+      filteredPosts = allPosts.filter(function(post) {
+        var title = (post.title || '').toLowerCase();
+        var body = (post.body || '').toLowerCase();
+        return title.includes(keyword) || body.includes(keyword);
+      });
+      renderPage();
+    }
+
+    function init() {
+      loadLocalPosts();
+      initSearch();
+    }
+
     function loadLocalPosts() {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', './posts.json', true);
@@ -280,7 +287,6 @@
       xhr.send(null);
     }
 
-    // 渲染侧边栏分类
     function renderCategory() {
       var side = document.getElementById('sidebar').querySelector('.sidebar-main');
       for (var i = 0; i < allLabels.length; i++) {
@@ -295,13 +301,16 @@
       }
     }
 
-    // 分类筛选
     function filterPosts(tag) {
       var items = document.querySelectorAll('.category-item');
       for (var i = 0; i < items.length; i++) {
         items[i].classList.remove('active');
       }
-      event.target.classList.add('active');
+      var activeEl = event ? event.target : this;
+      activeEl.classList.add('active');
+      
+      if(searchInput) searchInput.value = '';
+      
       currentPage = 1;
       if (tag === 'all') {
         filteredPosts = allPosts.slice();
@@ -323,16 +332,19 @@
       renderPagination(total);
     }
 
+    // ✅ 核心修复：将\n替换为<br>，网页完美换行
     function renderPosts(posts) {
       if (posts.length === 0) {
-        document.getElementById('list').innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>该分类下暂无文章</p>";
+        document.getElementById('list').innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>暂无匹配的文章</p>";
         return;
       }
       var html = '';
       for (var i = 0; i < posts.length; i++) {
         var art = posts[i];
         var id = i + 1;
-        html += '<div class="post"><h2>' + art.title + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(art.body) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
+        // 关键：把正文的换行符\n 替换成 HTML 换行标签 <br>
+        var bodyWithBr = art.body.replace(/\n/g, '<br>');
+        html += '<div class="post"><h2>' + art.title + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
       }
       document.getElementById('list').innerHTML = html;
       for (var i = 0; i < posts.length; i++) {
@@ -369,7 +381,6 @@
       el.style.maxHeight = '';
     }
 
-    // 跳转到指定页
     function jumpToPage() {
       var total = Math.ceil(filteredPosts.length / pageSize);
       var input = document.getElementById('jumpInput');
@@ -391,7 +402,6 @@
       
       wrap.innerHTML = '<button class="page-btn" onclick="prev()" ' + (currentPage === 1 ? 'disabled' : '') + '>上一页</button><span>' + currentPage + '/' + total + '</span><button class="page-btn" onclick="next()" ' + (currentPage === total ? 'disabled' : '') + '>下一页</button><input type="number" class="jump-input" id="jumpInput" min="1" max="' + total + '" placeholder="页码" /><button class="page-btn" onclick="jumpToPage()">跳转</button>';
       
-      // 输入框回车跳转
       document.getElementById('jumpInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') jumpToPage();
       });
