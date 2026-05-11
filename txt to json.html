@@ -10,30 +10,40 @@
     .box{max-width:800px;margin:20px auto;border:1px solid #000;padding:20px;}
     button{padding:8px 16px;margin:10px 0;cursor:pointer;font-family: monospace;}
     #status{color:#333;margin:10px 0;}
+    /* 核心：让HTML识别\n换行 */
+    #preview {
+      margin: 15px 0;
+      padding: 10px;
+      border: 1px solid #666;
+      min-height: 100px;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
   <div class="box">
-    <h3>TXT 转 JSON 工具</h1>
-    <p>精准规则：空行分篇 | 仅篇章最后一行———开头为标题 | 正文破折号不识别</p>
+    <h3>TXT 转 JSON 工具</h3>
+    <p>精准规则：空行分篇 | 仅篇章最后一行———/---开头为标题 | 正文破折号不识别</p>
     <input type="file" id="fileInput" accept=".txt">
     <button onclick="startConvert()">开始转换</button>
     <div id="status"></div>
+    <div id="preview">预览区域：转换后会在这里显示正文（自动换行）</div>
     <button onclick="downloadJson()" style="display:none" id="downloadBtn">下载 JSON</button>
   </div>
 
   <script>
     let resultJson = [];
-    // 仅识别 单独成行、在段落末尾 的 ———
-    const TITLE_SYMBOL = "———";
 
     function startConvert() {
       const fileInput = document.getElementById('fileInput');
       const status = document.getElementById('status');
       const downloadBtn = document.getElementById('downloadBtn');
+      const preview = document.getElementById('preview');
       
       if (!fileInput.files.length) {
         status.textContent = "请选择TXT文件";
+        preview.textContent = "";
         return;
       }
 
@@ -41,44 +51,39 @@
       reader.onload = e => {
         parseText(e.target.result);
         status.textContent = `转换完成！共 ${resultJson.length} 条数据`;
+        // ✅ 已删除多余的 --- 分隔符
+        preview.textContent = resultJson.map(item => `标题：${item.title}\n正文：${item.body}`).join('\n\n');
         downloadBtn.style.display = "block";
       };
       reader.readAsText(fileInput.files[0], 'UTF-8');
     }
 
-    // 核心解析：绝对精准，无任何误判
+    // 核心解析
     function parseText(text) {
       resultJson = [];
-      // 1. 按 空行 切割成独立篇章（最高优先级，绝不串篇）
       const passages = text.split(/\n\s*\n/)
         .map(item => item.trim())
         .filter(item => item);
 
-      // 遍历每一篇内容
       passages.forEach(passage => {
-        // 拆分当前篇章的所有行
         const lines = passage.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
         let title = "";
         let bodyContent = [];
 
-        // 遍历所有行，只把【最后一行的———】判定为标题
         lines.forEach((line, idx) => {
           const isLastLine = idx === lines.length - 1;
-          const isTitleLine = line.startsWith(TITLE_SYMBOL);
+          const isTitleLine = line.startsWith("———") || line.startsWith("---");
 
-          // 只有最后一行 + 以———开头 → 标题
           if (isLastLine && isTitleLine) {
-            title = line.replace(TITLE_SYMBOL, "").trim();
+            title = line.replace("———", "").replace("---", "").trim();
           } else {
-            // 其他所有行 → 纯正文（包含正文内的破折号，完全不处理）
             bodyContent.push(line);
           }
         });
 
-        // 合并正文
-        const body = bodyContent.join(" ").trim();
+        // 保留换行符
+        const body = bodyContent.join("\n").trim();
         
-        // 保存有效数据
         if (body) {
           resultJson.push({
             title: title,
