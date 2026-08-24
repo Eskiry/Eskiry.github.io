@@ -9,29 +9,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #ffffff;
-      --text: #111111;
-      --border: #eee;
-      --card-bg: #f9f9f9;
-      --code-bg: #f7f7f7;
-      --mask-end: #fff;
-      --btn-bg: #f5f5f5;
-      --btn-text: #0055cc;
-      --muted: #444444;
-      --sidebar-bg: #fafafa;
+      --bg: #fbf7ec;
+      --text: #2c2c2c;
+      --border: #e6dec5;
+      --card-bg: #f4efdf;
+      --code-bg: #eee7d3;
+      --mask-end: #fbf7ec;
+      --btn-bg: #f0e8d0;
+      --btn-text: #8c5822;
+      --muted: #6b6353;
+      --sidebar-bg: #f6efe2;
     }
+    
     [data-theme="dark"] {
-      --bg: #121212;
-      --text: #f0f0f0;
-      --border: #2a2a2a;
-      --card-bg: #1e1e1e;
-      --code-bg: #252525;
-      --mask-end: #121212;
-      --btn-bg: #252525;
-      --btn-text: #69b1ff;
-      --muted: #bbbbbb;
-      --sidebar-bg: #1a1a1a;
+      --bg: #161618;
+      --text: #e1e1e6;
+      --border: #2a2a2e;
+      --card-bg: #1e1e22;
+      --code-bg: #26262b;
+      --mask-end: #161618;
+      --btn-bg: #26262b;
+      --btn-text: #528bff;
+      --muted: #9c9ca6;
+      --sidebar-bg: #1a1a1e;
     }
+
+    [data-theme="eink"] {
+      --bg: #ffffff;
+      --text: #000000;
+      --border: #000000;
+      --card-bg: #ffffff;
+      --code-bg: #f0f0f0;
+      --mask-end: #fff;
+      --btn-bg: #ffffff;
+      --btn-text: #000000;
+      --muted: #000000;
+      --sidebar-bg: #ffffff;
+    }
+
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       font-family:"Noto Serif SC",serif;
@@ -39,13 +54,13 @@
       font-size:17px;
       background:var(--bg);
       color:var(--text);
-      transition:.3s;
+      transition: background .3s, color .3s;
       text-align:left;
     }
     .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
 
     .sidebar{
-      width:200px;
+      width:220px;
       background:var(--sidebar-bg);
       padding:40px 15px;
       border-right:1px solid var(--border);
@@ -72,7 +87,8 @@
       flex-direction: column;
       gap: 8px;
     }
-    .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
+    .sidebar h2{font-size:22px;margin-bottom:20px;text-align:center}
+
     .category-item{
       padding:10px 12px;
       margin:6px auto;
@@ -82,19 +98,38 @@
       transition:.2s;
       width: 90%;
     }
-    .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
+    .category-item.active,.category-item:hover{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      font-weight: 600;
+    }
+    [data-theme="eink"] .category-item.active, 
+    [data-theme="eink"] .category-item:hover {
+      background: #000000;
+      color: #ffffff;
+    }
+
     .main{flex:1;padding:20px 5% 60px;text-align:left;transition: margin-left 0.3s;}
 
     .theme-btn,.random-mini-btn{
-      padding:5px 10px;
+      padding:6px 10px;
       border-radius:6px;
-      border:none;
+      border: 1px solid var(--border);
       background:var(--btn-bg);
       color:var(--btn-text);
       cursor:pointer;
       font-size:12px;
       font-family:inherit;
     }
+    
+    [data-theme="eink"] .theme-btn, 
+    [data-theme="eink"] .random-mini-btn,
+    [data-theme="eink"] .search-input,
+    [data-theme="eink"] .page-btn,
+    [data-theme="eink"] .jump-input {
+      border: 1px solid #000000 !important;
+    }
+
     .search-input{
       padding:5px 10px;
       border-radius:6px;
@@ -118,7 +153,7 @@
       z-index: 100;
       padding: 6px 12px;
       border-radius: 6px;
-      border: none;
+      border: 1px solid var(--border);
       background: var(--btn-bg);
       color: var(--btn-text);
       cursor: pointer;
@@ -126,12 +161,6 @@
       display: none;
     }
 
-    .loading-tip{
-      text-align:left;
-      padding:60px 0;
-      color:var(--muted);
-      font-size:16px;
-    }
     .post{
       padding:35px 0;
       border-bottom:1px solid var(--border);
@@ -146,6 +175,15 @@
       line-height:1.4;
       text-align:left;
     }
+    
+    .thought-meta {
+      text-align: right;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 12px;
+      font-style: italic;
+    }
+
     .post-content{
       font-size:18px;
       position:relative;
@@ -155,6 +193,12 @@
     }
     .post-content.collapsible{max-height:640px;overflow:hidden}
     .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
+    
+    [data-theme="eink"] .post-content.collapsible::after {
+      background: none;
+      border-bottom: 2px dashed #000;
+    }
+
     .post-content.expand{max-height:3000px;overflow:visible}
     .post-content.expand::after{display:none}
     .post-content img{max-width:100%;border-radius:6px}
@@ -169,25 +213,27 @@
       border-radius:6px;
       cursor:pointer;
       color:var(--btn-text);
-      border:none;
+      border: 1px solid var(--border);
     }
     .post-content.collapsible~.toggle-btn{display:inline-block}
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
-    .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
+    .page-btn{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
 
-    /* 本地文件降级选择框样式 */
     #fallbackBox {
       padding: 25px;
       border: 2px dashed var(--btn-text);
       border-radius: 8px;
       background: var(--card-bg);
-      margin-top: 50px;
+      margin-bottom: 20px;
     }
-    #fallbackBox input[type="file"] {
+    .fallback-file-item {
+      padding: 12px;
       margin-top: 10px;
-      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
     }
 
     @media (max-width: 768px) {
@@ -224,36 +270,45 @@
     <div class="sidebar" id="sidebar">
       <div class="sidebar-main">
         <h2>Layi's Records</h2>
-        <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
+        <div id="categoryContainer"></div>
       </div>
 
       <div class="sidebar-footer">
         <input type="text" id="searchInput" class="search-input" placeholder="搜索标题/正文关键词...">
-        <button class="theme-btn" id="themeBtn">日间模式</button>
+        <button class="theme-btn" id="themeBtn">加载中...</button>
         <button class="random-mini-btn" onclick="showRandomPost()">随机</button>
       </div>
     </div>
 
     <div class="main">
-      <div id="list" class="loading-tip">正在加载文章...</div>
-      
-      <div id="fallbackBox" style="display: none;">
-        <h3 style="margin-bottom: 10px; color: var(--btn-text);">⚠️ 无法自动加载 posts.json</h3>
-        <p style="font-size: 15px; color: var(--muted); margin-bottom: 12px;">
-          常见原因：双击本地打开 HTML 受到浏览器的跨域安全限制 (CORS)。
+      <div id="fallbackBox">
+        <h3 style="margin-bottom: 8px; color: var(--btn-text);">📂 本地离线文件手动加载</h3>
+        <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
+          提示：若在本地双击打开网页，可按需导入对应的 JSON 数据文件：
         </p>
-        <p style="font-size: 15px;"><b>请点击下方按钮，手动选择你本地的 <code>posts.json</code> 文件：</b></p>
-        <input type="file" id="localJsonFile" accept=".json" onchange="loadUserLocalJson(this)">
+        
+        <div class="fallback-file-item">
+          <label><b>1. 导入文章库 (posts.json)：</b> <span id="statusPosts" style="color:green;font-size:13px;"></span></label><br>
+          <input type="file" accept=".json" onchange="loadLocalPostsJson(this)" style="margin-top:6px;">
+        </div>
+
+        <div class="fallback-file-item" style="margin-top: 10px;">
+          <label><b>2. 导入想法库 (thoughts.json)：</b> <span id="statusThoughts" style="color:green;font-size:13px;"></span></label><br>
+          <input type="file" accept=".json" onchange="loadLocalThoughtsJson(this)" style="margin-top:6px;">
+        </div>
       </div>
 
+      <div id="list"></div>
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
   <script>
-    var allPosts = [], allLabels = [], filteredPosts = [];
+    var allPosts = [], allThoughts = [], allLabels = [];
+    var activeCategory = ''; 
     var currentPage = 1;
     var pageSize = 25, COLLAPSE_HEIGHT = 640;
+    var filteredPosts = [];
     var searchInput = null, searchTimer = null;
 
     document.getElementById('sidebarToggle').onclick = function(){
@@ -261,34 +316,37 @@
     };
 
     function showRandomPost() {
-      if(!allPosts || allPosts.length === 0) return;
-      var post = allPosts[Math.floor(Math.random() * allPosts.length)];
+      if (!filteredPosts || filteredPosts.length === 0) return;
+      var post = filteredPosts[Math.floor(Math.random() * filteredPosts.length)];
       filteredPosts = [post];
       currentPage = 1;
       renderPage();
     }
 
     var themeBtn = document.getElementById('themeBtn');
-    var savedTheme = localStorage.getItem('theme');
-    if(savedTheme === 'light'){
-      document.documentElement.removeAttribute('data-theme');
-      themeBtn.textContent = "夜间模式";
-    }else{
-      document.documentElement.setAttribute('data-theme', 'dark');
-      themeBtn.textContent = "日间模式";
+    function applyTheme(theme) {
+      var htmlEl = document.documentElement;
+      if (theme === 'dark') {
+        htmlEl.setAttribute('data-theme', 'dark');
+        themeBtn.textContent = "夜间模式";
+      } else if (theme === 'eink') {
+        htmlEl.setAttribute('data-theme', 'eink');
+        themeBtn.textContent = "E-Ink模式";
+      } else {
+        htmlEl.removeAttribute('data-theme');
+        themeBtn.textContent = "日间模式";
+      }
+      localStorage.setItem('theme', theme);
     }
 
+    var savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
     themeBtn.onclick = function() {
-      var dark = document.documentElement.hasAttribute('data-theme');
-      if (dark) {
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        themeBtn.textContent = '夜间模式';
-      } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        themeBtn.textContent = '日间模式';
-      }
+      var current = localStorage.getItem('theme') || 'light';
+      if (current === 'light') applyTheme('dark');
+      else if (current === 'dark') applyTheme('eink');
+      else applyTheme('light');
     };
 
     function initSearch() {
@@ -302,12 +360,13 @@
     function doSearch() {
       var keyword = searchInput.value.trim().toLowerCase();
       currentPage = 1;
+      var targetList = (activeCategory === 'THOUGHTS') ? allThoughts : allPosts;
+      
       if (!keyword) {
-        filteredPosts = allPosts.slice();
-        renderPage();
+        selectCategory(activeCategory);
         return;
       }
-      filteredPosts = allPosts.filter(function(post) {
+      filteredPosts = targetList.filter(function(post) {
         var title = (post.title || '').toLowerCase();
         var body = (post.body || '').toLowerCase();
         return title.indexOf(keyword) !== -1 || body.indexOf(keyword) !== -1; 
@@ -316,13 +375,31 @@
     }
 
     function init() {
-      loadLocalPosts();
       initSearch();
+      tryAutoLoadServerFiles();
     }
 
-    // 核心处理函数：解析并构建数据
-    function processPostsData(rawData) {
-      allPosts = rawData;
+    function tryAutoLoadServerFiles() {
+      var xhr1 = new XMLHttpRequest();
+      xhr1.open('GET', './posts.json', true);
+      xhr1.onreadystatechange = function() {
+        if (xhr1.readyState === 4) {
+          if (xhr1.status === 200) {
+            try { 
+              allPosts = JSON.parse(xhr1.responseText); 
+              if (allPosts.length > 0) {
+                handleDataReady();
+              }
+            } catch(e) {}
+          }
+        }
+      };
+      xhr1.send(null);
+    }
+
+    function handleDataReady() {
+      document.getElementById('fallbackBox').style.display = 'none';
+
       var tagSet = new Set();
       for (var i = 0; i < allPosts.length; i++) {
         var labels = allPosts[i].labels || []; 
@@ -332,106 +409,122 @@
       }
       allLabels = Array.from(tagSet);
       
-      filteredPosts = allPosts.slice();
-      renderPage();
       renderCategory();
-    }
-
-    function loadLocalPosts() {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', './posts.json', true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            try {
-              var parsedData = JSON.parse(xhr.responseText);
-              processPostsData(parsedData);
-            } catch (e) {
-              showFallback("加载失败：JSON 解析错误");
-            }
-          } else {
-            showFallback("加载失败：请检查 posts.json 文件是否存在");
-          }
+      
+      if (!activeCategory) {
+        if (allLabels.length > 0) {
+          selectCategory(allLabels[0]);
+        } else if (allThoughts.length > 0) {
+          selectCategory('THOUGHTS');
         }
-      };
-      // 针对部分由于跨域或无服务直接触发 onerror 的情况
-      xhr.onerror = function() {
-        showFallback("加载失败：网络或跨域受限");
-      };
-      xhr.send(null);
+      } else {
+        selectCategory(activeCategory);
+      }
     }
 
-    // 触发降级显示
-    function showFallback(msg) {
-      document.getElementById('list').innerHTML = '';
-      document.getElementById('fallbackBox').style.display = 'block';
-    }
-
-    // 用户通过本地文件选择框引入 posts.json
-    function loadUserLocalJson(inputElement) {
-      const file = inputElement.files[0];
+    function loadLocalPostsJson(input) {
+      var file = input.files[0];
       if (!file) return;
-
-      const reader = new FileReader();
+      var reader = new FileReader();
       reader.readAsText(file, 'UTF-8');
       reader.onload = function(e) {
         try {
-          const parsedData = JSON.parse(e.target.result);
-          if(!Array.isArray(parsedData)) {
-            alert('解析失败：JSON 根节点必须是数组格式！');
+          var parsed = JSON.parse(e.target.result);
+          if (!Array.isArray(parsed)) {
+            alert('错误：posts.json 根节点必须是数组！');
             return;
           }
-          // 隐藏降级提示框
-          document.getElementById('fallbackBox').style.display = 'none';
-          processPostsData(parsedData);
-        } catch (err) {
-          alert('JSON 解析失败，请确认选择的是正确的 posts.json 文件。');
-        }
+          allPosts = parsed;
+          document.getElementById('statusPosts').textContent = '✔ 已加载 (' + allPosts.length + '篇)';
+          handleDataReady();
+        } catch (err) { alert('posts.json 解析失败。'); }
+      };
+    }
+
+    function loadLocalThoughtsJson(input) {
+      var file = input.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.readAsText(file, 'UTF-8');
+      reader.onload = function(e) {
+        try {
+          var parsed = JSON.parse(e.target.result);
+          if (!Array.isArray(parsed)) {
+            alert('错误：thoughts.json 根节点必须是数组！');
+            return;
+          }
+          allThoughts = parsed;
+          allThoughts.sort(function(a, b) {
+            return b.title.localeCompare(a.title, undefined, {numeric: true, sensitivity: 'base'});
+          });
+          document.getElementById('statusThoughts').textContent = '✔ 已加载 (' + allThoughts.length + '条)';
+          handleDataReady();
+        } catch (err) { alert('thoughts.json 解析失败。'); }
       };
     }
 
     function renderCategory() {
-      var side = document.getElementById('sidebar').querySelector('.sidebar-main');
+      var container = document.getElementById('categoryContainer');
+      container.innerHTML = '';
       var fragment = document.createDocumentFragment(); 
+
       for (var i = 0; i < allLabels.length; i++) {
         var tag = allLabels[i];
         var div = document.createElement('div');
         div.className = 'category-item';
         div.textContent = tag;
-        div.onclick = function() {
-          filterPosts(this.textContent);
-        };
+        div.onclick = (function(currentTag) {
+          return function(e) { selectCategory(currentTag, e); };
+        })(tag);
         fragment.appendChild(div);
       }
-      side.appendChild(fragment); 
+
+      if (allThoughts.length > 0) {
+        var thoughtsDiv = document.createElement('div');
+        thoughtsDiv.className = 'category-item';
+        thoughtsDiv.textContent = '想法';
+        thoughtsDiv.onclick = function(e) { selectCategory('THOUGHTS', e); };
+        fragment.appendChild(thoughtsDiv);
+      }
+
+      container.appendChild(fragment); 
     }
 
-    function filterPosts(tag) {
+    function selectCategory(cat, eventObj) {
+      activeCategory = cat;
+      
       var items = document.querySelectorAll('.category-item');
-      for (var i = 0; i < items.length; i++) {
-        items[i].classList.remove('active');
-      }
-      var activeEl = event ? event.target : this;
-      activeEl.classList.add('active');
-      
-      if(searchInput) searchInput.value = '';
-      
-      currentPage = 1;
-      if (tag === 'all') {
-        filteredPosts = allPosts.slice();
-      } else {
-        filteredPosts = [];
-        for (var i = 0; i < allPosts.length; i++) {
-          if ((allPosts[i].labels || []).indexOf(tag) !== -1) {
-            filteredPosts.push(allPosts[i]);
-          }
+      items.forEach(function(el) {
+        el.classList.remove('active');
+        if ((cat === 'THOUGHTS' && el.textContent === '想法') || (el.textContent === cat)) {
+          el.classList.add('active');
         }
+      });
+
+      if (eventObj && eventObj.currentTarget) {
+        items.forEach(function(el) { el.classList.remove('active'); });
+        eventObj.currentTarget.classList.add('active');
       }
+      
+      if (searchInput) searchInput.value = '';
+      currentPage = 1;
+
+      if (cat === 'THOUGHTS') {
+        filteredPosts = allThoughts.slice();
+      } else {
+        filteredPosts = allPosts.filter(function(item) {
+          return (item.labels || []).indexOf(cat) !== -1;
+        });
+      }
+
       renderPage();
     }
 
     function renderPage() {
       var total = Math.ceil(filteredPosts.length / pageSize);
+      if (total > 0 && currentPage > total) {
+        currentPage = total;
+      }
       var start = (currentPage - 1) * pageSize;
       renderPosts(filteredPosts.slice(start, start + pageSize));
       renderPagination(total);
@@ -439,17 +532,26 @@
 
     function renderPosts(posts) {
       var listEl = document.getElementById('list');
+      if (!listEl) return;
+      
       if (posts.length === 0) {
-        listEl.innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>暂无匹配的文章</p>";
+        listEl.innerHTML = "<p style='text-align:left;margin-top:20px;color:var(--text)'>当前分类下暂无内容</p>";
         return;
       }
       
       var html = '';
+      var isThoughtView = (activeCategory === 'THOUGHTS');
+
       for (var i = 0; i < posts.length; i++) {
         var art = posts[i];
         var id = i + 1;
         var bodyWithBr = (art.body || '').replace(/\n/g, '<br>'); 
-        html += '<div class="post"><h2>' + (art.title || '') + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
+        
+        if (!isThoughtView) {
+          html += '<div class="post"><h2>' + (art.title || '') + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
+        } else {
+          html += '<div class="post"><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><div class="thought-meta">── ' + (art.title || '') + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
+        }
       }
       listEl.innerHTML = html; 
 
@@ -464,6 +566,8 @@
     function toggleBody(id) {
       var el = document.getElementById('b' + id);
       var btn = document.getElementById('tb' + id);
+      if (!el || !btn) return;
+      
       el.classList.toggle("expand");
       if (el.classList.contains("expand")) {
         btn.textContent = "收起";
@@ -479,38 +583,42 @@
     function jumpToPage() {
       var total = Math.ceil(filteredPosts.length / pageSize);
       var input = document.getElementById('jumpInput');
+      if (!input) return;
       var page = parseInt(input.value.trim());
-      
       if (isNaN(page)) return;
       page = Math.max(1, Math.min(page, total));
       currentPage = page;
       renderPage();
-      scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderPagination(total) {
       var wrap = document.getElementById('pagination');
+      if (!wrap) return;
       if (total <= 1) {
         wrap.innerHTML = '';
         return;
       }
-      
       wrap.innerHTML = '<button class="page-btn" onclick="prev()" ' + (currentPage === 1 ? 'disabled' : '') + '>上一页</button><span>' + currentPage + '/' + total + '</span><button class="page-btn" onclick="next()" ' + (currentPage === total ? 'disabled' : '') + '>下一页</button><input type="number" class="jump-input" id="jumpInput" min="1" max="' + total + '" placeholder="页码" /><button class="page-btn" onclick="jumpToPage()">跳转</button>';
       
-      document.getElementById('jumpInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') jumpToPage();
-      });
+      var jumpInputEl = document.getElementById('jumpInput');
+      if (jumpInputEl) {
+        jumpInputEl.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') jumpToPage();
+        });
+      }
     }
 
     function prev() { 
       currentPage--; 
       renderPage(); 
-      scrollTo({top:0,behavior:'smooth'});
+      window.scrollTo({top:0,behavior:'smooth'});
     }
+    
     function next() { 
       currentPage++; 
       renderPage(); 
-      scrollTo({top:0,behavior:'smooth'});
+      window.scrollTo({top:0,behavior:'smooth'});
     }
     
     init();
