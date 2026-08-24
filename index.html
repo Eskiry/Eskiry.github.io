@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Eskiry's record</title>
-  <!-- 引入 Noto Serif SC（思源宋体）的官方网页子集 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
@@ -320,7 +319,13 @@
     sidebarOverlay.addEventListener('click', toggleSidebar);
 
     function showRandomPost() {
-      const targetList = (activeCategory === 'THOUGHTS') ? allThoughts : allPosts;
+      // 优化：根据当前分类范围获取随机池，避免全量全局随机错乱
+      let targetList = [];
+      if (activeCategory === 'THOUGHTS') {
+        targetList = allThoughts;
+      } else {
+        targetList = allPosts.filter(item => (item.labels || []).includes(activeCategory));
+      }
       if (!targetList || targetList.length === 0) return;
       const post = targetList[Math.floor(Math.random() * targetList.length)];
       filteredPosts = [post];
@@ -487,17 +492,14 @@
     function selectCategory(cat, eventObj) {
       activeCategory = cat;
       
+      // 优化：统一高亮逻辑，通过 DOM 遍历精准匹配激活状态，避免重复查询和冗余分配
       document.querySelectorAll('.category-item').forEach(el => {
-        el.classList.remove('active');
         if ((cat === 'THOUGHTS' && el.textContent === '想法') || (el.textContent === cat)) {
           el.classList.add('active');
+        } else {
+          el.classList.remove('active');
         }
       });
-
-      if (eventObj && eventObj.currentTarget) {
-        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
-        eventObj.currentTarget.classList.add('active');
-      }
 
       if (window.innerWidth <= 768) {
         sidebar.classList.remove('show');
