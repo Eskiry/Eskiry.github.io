@@ -16,7 +16,6 @@
       --border: #e6dec5;
       --card-bg: #f4efdf;
       --code-bg: #eee7d3;
-      --mask-end: #fbf7ec;
       --btn-bg: #f0e8d0;
       --btn-text: #8c5822;
       --muted: #6b6353;
@@ -29,7 +28,6 @@
       --border: #2a2a2e;
       --card-bg: #1e1e22;
       --code-bg: #26262b;
-      --mask-end: #161618;
       --btn-bg: #26262b;
       --btn-text: #528bff;
       --muted: #9c9ca6;
@@ -42,7 +40,6 @@
       --border: #000000;
       --card-bg: #ffffff;
       --code-bg: #f0f0f0;
-      --mask-end: #fff;
       --btn-bg: #ffffff;
       --btn-text: #000000;
       --muted: #000000;
@@ -55,7 +52,6 @@
 
     *{margin:0;padding:0;box-sizing:border-box}
     body{
-      /* 优先应用 Noto Serif SC，兼顾各系统备用宋体 */
       font-family: "Noto Serif SC", "FZPingXianYaSong-R-GB", "方正屏显雅宋简体","LXGW WenKai Screen", "LXGWWenKaiScreen", serif;
       line-height:1.9;
       font-size:17px;
@@ -154,7 +150,6 @@
       border-color: var(--btn-text);
     }
 
-    /* 手机端遮罩背景 */
     .sidebar-overlay {
       display: none;
       position: fixed;
@@ -164,7 +159,6 @@
     }
     .sidebar-overlay.show { display: block; }
 
-    /* 原生左上角菜单按钮 */
     .sidebar-toggle{
       position: fixed;
       top: 15px;
@@ -208,35 +202,12 @@
     .post-content{
       font-size:18px;
       position:relative;
-      transition:max-height .4s ease;
       text-align:left;
       color:var(--text);
     }
-    .post-content.collapsible{max-height:640px;overflow:hidden}
-    .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
-    
-    [data-theme="eink"] .post-content.collapsible::after {
-      background: none;
-      border-bottom: 2px dashed #000;
-    }
-
-    .post-content.expand{max-height:none;overflow:visible}
-    .post-content.expand::after{display:none}
     .post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
     .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
     .post-content code{padding:3px 6px;font-size:16px}
-    .toggle-btn{
-      display:none;
-      margin:15px 0 0;
-      padding:6px 14px;
-      background:var(--btn-bg);
-      border-radius:6px;
-      cursor:pointer;
-      color:var(--btn-text);
-      border: 1px solid var(--border);
-    }
-    .post-content.collapsible ~ .toggle-btn,
-    .post-content.expand ~ .toggle-btn { display:inline-block; }
 
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
     .page-btn{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
@@ -325,7 +296,7 @@
     let allPosts = [], allThoughts = [], allLabels = [];
     let activeCategory = ''; 
     let currentPage = 1;
-    const pageSize = 25, COLLAPSE_HEIGHT = 640;
+    const pageSize = 25;
     let filteredPosts = [];
     let searchInput = null, searchTimer = null;
     const themeBtn = document.getElementById('themeBtn');
@@ -583,8 +554,7 @@
       
       const isThoughtView = (activeCategory === 'THOUGHTS');
       
-      listEl.innerHTML = posts.map((art, i) => {
-        const id = i + 1;
+      listEl.innerHTML = posts.map((art) => {
         const title = escapeHTML(art.title || '');
         const bodyContent = art.body || '';
         const parsedBody = marked.parse(bodyContent, { breaks: true });
@@ -593,44 +563,18 @@
           return `
             <div class="post">
               <h2>${title}</h2>
-              <div class="post-content" id="b${id}">${parsedBody}</div>
-              <button class="toggle-btn" id="tb${id}" onclick="toggleBody(${id})">阅读全文</button>
+              <div class="post-content">${parsedBody}</div>
             </div>
           `;
         } else {
           return `
             <div class="post">
-              <div class="post-content" id="b${id}">${parsedBody}</div>
+              <div class="post-content">${parsedBody}</div>
               <div class="thought-meta">── ${title}</div>
-              <button class="toggle-btn" id="tb${id}" onclick="toggleBody(${id})">阅读全文</button>
             </div>
           `;
         }
       }).join(''); 
-
-      listEl.querySelectorAll('.post-content').forEach(el => {
-        if (el.scrollHeight > COLLAPSE_HEIGHT) {
-          el.classList.add("collapsible");
-        }
-      });
-    }
-
-    function toggleBody(id) {
-      const el = document.getElementById(`b${id}`);
-      const btn = document.getElementById(`tb${id}`);
-      if (!el || !btn) return;
-      
-      if (el.classList.contains("expand")) {
-        el.classList.remove("expand");
-        if (el.scrollHeight > COLLAPSE_HEIGHT) {
-          el.classList.add("collapsible");
-        }
-        btn.textContent = "阅读全文";
-      } else {
-        el.classList.add("expand");
-        el.classList.remove("collapsible");
-        btn.textContent = "收起";
-      }
     }
 
     function jumpToPage() {
