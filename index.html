@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>layi's record</title>
-  <!-- 引入霞鹜文楷屏幕版的轻量在线子集：体积极小（仅几十KB），保障未安装本地字体的设备也能完美显示文楷 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.1.0/style.css" />
+  <title>Eskiry's record</title>
+  <!-- 引入 Noto Serif SC（思源宋体）的官方网页子集 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  
   <style>
     :root {
       --bg: #fbf7ec;
@@ -46,18 +49,14 @@
       --sidebar-bg: #ffffff;
     }
 
-    /* 墨水屏模式下禁用过渡动画，防止残影 */
     [data-theme="eink"] * {
       transition: none !important;
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
     body{
-      /* 你的优先级策略：
-         1. 本地 LXGW 文楷
-         2. 在线精简子集文楷 (LXGW WenKai Screen)
-         3. 浏览器默认字体 (不额外干预，默认是什么样就是什么样) */
-      font-family: "LXGW WenKai Screen", "LXGWWenKaiScreen", sans-serif;
+      /* 优先应用 Noto Serif SC，兼顾各系统备用宋体 */
+      font-family: "Noto Serif SC", "FZPingXianYaSong-R-GB", "方正屏显雅宋简体","LXGW WenKai Screen", "LXGWWenKaiScreen", serif;
       line-height:1.9;
       font-size:17px;
       background:var(--bg);
@@ -134,7 +133,8 @@
     [data-theme="eink"] .random-mini-btn,
     [data-theme="eink"] .search-input,
     [data-theme="eink"] .page-btn,
-    [data-theme="eink"] .jump-input {
+    [data-theme="eink"] .jump-input,
+    [data-theme="eink"] .sidebar-toggle {
       border: 1px solid #000000 !important;
     }
 
@@ -154,19 +154,32 @@
       border-color: var(--btn-text);
     }
 
+    /* 手机端遮罩背景 */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.3);
+      z-index: 98;
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* 原生左上角菜单按钮 */
     .sidebar-toggle{
       position: fixed;
       top: 15px;
       left: 15px;
       z-index: 100;
-      padding: 6px 12px;
+      padding: 5px 12px;
       border-radius: 6px;
       border: 1px solid var(--border);
       background: var(--btn-bg);
       color: var(--btn-text);
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       display: none;
+      font-family: inherit;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
 
     .post{
@@ -249,7 +262,7 @@
       .sidebar-toggle{display: block;}
       .container {flex-direction: column;}
       .sidebar {
-        width: 200px;
+        width: 210px;
         height: 100vh;
         position: fixed;
         left: 0;
@@ -262,7 +275,7 @@
         transform: translateX(0);
       }
       .main {
-        padding: 60px 15px 40px;
+        padding: 60px 15px 40px; 
       }
       .post {padding: 25px 0;}
       .post h2 {font-size: 18px;}
@@ -274,11 +287,12 @@
 
 <body>
   <button class="sidebar-toggle" id="sidebarToggle">菜单</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <div class="container">
     <div class="sidebar" id="sidebar">
       <div class="sidebar-main">
-        <h2>Layi's Records</h2>
+        <h2>Eskiry's Records</h2>
         <div id="categoryContainer"></div>
       </div>
 
@@ -322,9 +336,17 @@
       }[m]));
     }
 
-    document.getElementById('sidebarToggle').addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('show');
-    });
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('show');
+      sidebarOverlay.classList.toggle('show');
+    }
+
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
 
     function showRandomPost() {
       const targetList = (activeCategory === 'THOUGHTS') ? allThoughts : allPosts;
@@ -507,7 +529,8 @@
       }
 
       if (window.innerWidth <= 768) {
-        document.getElementById('sidebar').classList.remove('show');
+        sidebar.classList.remove('show');
+        sidebarOverlay.classList.remove('show');
       }
       
       if (searchInput) searchInput.value = '';
@@ -603,7 +626,6 @@
           el.classList.add("collapsible");
         }
         btn.textContent = "阅读全文";
-        el.closest('.post').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         el.classList.add("expand");
         el.classList.remove("collapsible");
