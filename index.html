@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    /* CSS 完全保持不变 */
     :root {
       --bg: #ffffff;
       --text: #111111;
@@ -44,7 +45,6 @@
     }
     .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
 
-    /* 1. 压缩侧边栏宽度到 200px */
     .sidebar{
       width:200px;
       background:var(--sidebar-bg);
@@ -56,7 +56,6 @@
       overflow-y:auto;
       display:flex;
       flex-direction:column;
-      /* 全部内容居中 */
       text-align:center;
       transition: transform 0.3s ease;
       z-index: 99;
@@ -113,7 +112,6 @@
       border-color: var(--btn-text);
     }
 
-    /* 侧边栏折叠按钮 */
     .sidebar-toggle{
       position: fixed;
       top: 15px;
@@ -180,11 +178,9 @@
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
 
-    /* 移动端：小屏自动折叠侧边栏 */
     @media (max-width: 768px) {
       .sidebar-toggle{display: block;}
       .container {flex-direction: column;}
-      /* 默认隐藏侧边栏 */
       .sidebar {
         width: 200px;
         height: 100vh;
@@ -195,7 +191,6 @@
         border-right: 1px solid var(--border);
         border-bottom: none;
       }
-      /* 侧边栏展开状态 */
       .sidebar.show {
         transform: translateX(0);
       }
@@ -211,7 +206,6 @@
 </head>
 
 <body>
-  <!-- 移动端折叠按钮 -->
   <button class="sidebar-toggle" id="sidebarToggle">菜单</button>
 
   <div class="container">
@@ -238,9 +232,8 @@
     var allPosts = [], allLabels = [], filteredPosts = [];
     var currentPage = 1;
     var pageSize = 25, COLLAPSE_HEIGHT = 640;
-    var searchInput = null;
+    var searchInput = null, searchTimer = null;
 
-    // 侧边栏折叠切换
     document.getElementById('sidebarToggle').onclick = function(){
       document.getElementById('sidebar').classList.toggle('show');
     };
@@ -276,10 +269,12 @@
       }
     };
 
+    // 【优化2】搜索防抖控制
     function initSearch() {
       searchInput = document.getElementById('searchInput');
       searchInput.addEventListener('input', function() {
-        doSearch();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(doSearch, 200); // 用户停顿200ms后才计算
       });
     }
 
@@ -294,7 +289,8 @@
       filteredPosts = allPosts.filter(function(post) {
         var title = (post.title || '').toLowerCase();
         var body = (post.body || '').toLowerCase();
-        return title.includes(keyword) || body.includes(keyword);
+        // indexOf 在大批量字符匹配时底层性能略优于 includes
+        return title.indexOf(keyword) !== -1 || body.indexOf(keyword) !== -1; 
       });
       renderPage();
     }
@@ -314,15 +310,14 @@
               allPosts = JSON.parse(xhr.responseText);
               var tagSet = new Set();
               for (var i = 0; i < allPosts.length; i++) {
-                var labels = allPosts[i].labels;
+                var labels = allPosts[i].labels || []; // 容错处理
                 for (var j = 0; j < labels.length; j++) {
                   tagSet.add(labels[j]);
                 }
               }
-              allLabels = [];
-              tagSet.forEach(function(tag) {
-                allLabels.push(tag);
-              });
+              // 【优化4】直接转换 Array 更高效
+              allLabels = Array.from(tagSet);
+              
               filteredPosts = allPosts.slice();
               renderPage();
               renderCategory();
@@ -337,8 +332,10 @@
       xhr.send(null);
     }
 
+    // 【优化3】DOM 碎片化批量插入
     function renderCategory() {
       var side = document.getElementById('sidebar').querySelector('.sidebar-main');
+      var fragment = document.createDocumentFragment(); 
       for (var i = 0; i < allLabels.length; i++) {
         var tag = allLabels[i];
         var div = document.createElement('div');
@@ -347,8 +344,9 @@
         div.onclick = function() {
           filterPosts(this.textContent);
         };
-        side.appendChild(div);
+        fragment.appendChild(div);
       }
+      side.appendChild(fragment); // 循环结束后仅触发1次回流
     }
 
     function filterPosts(tag) {
@@ -367,7 +365,7 @@
       } else {
         filteredPosts = [];
         for (var i = 0; i < allPosts.length; i++) {
-          if (allPosts[i].labels.indexOf(tag) !== -1) {
+          if ((allPosts[i].labels || []).indexOf(tag) !== -1) {
             filteredPosts.push(allPosts[i]);
           }
         }
@@ -382,24 +380,29 @@
       renderPagination(total);
     }
 
+    // 【优化1】批量读写消除 Layout Thrashing，弃用 setTimeout
     function renderPosts(posts) {
+      var listEl = document.getElementById('list');
       if (posts.length === 0) {
-        document.getElementById('list').innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>暂无匹配的文章</p>";
+        listEl.innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>暂无匹配的文章</p>";
         return;
       }
+      
       var html = '';
       for (var i = 0; i < posts.length; i++) {
         var art = posts[i];
         var id = i + 1;
-        var bodyWithBr = art.body.replace(/\n/g, '<br>');
-        html += '<div class="post"><h2>' + art.title + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
+        var bodyWithBr = (art.body || '').replace(/\n/g, '<br>'); // 容错处理
+        html += '<div class="post"><h2>' + (art.title || '') + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
       }
-      document.getElementById('list').innerHTML = html;
-      for (var i = 0; i < posts.length; i++) {
-        var id = i + 1;
-        setTimeout(function() {
-          checkCollapse(id);
-        }, 0);
+      listEl.innerHTML = html; // 一次性渲染
+
+      // DOM 写入完毕后，统一读取元素的原生高度，避免浏览器重排
+      var contents = listEl.querySelectorAll('.post-content');
+      for (var k = 0; k < contents.length; k++) {
+        if (contents[k].scrollHeight > COLLAPSE_HEIGHT) {
+          contents[k].classList.add("collapsible");
+        }
       }
     }
 
@@ -412,21 +415,11 @@
         el.classList.remove("collapsible");
       } else {
         btn.textContent = "阅读全文";
-        setTimeout(function() {
-          checkCollapse(id);
-        }, 0);
+        // 收起时不再需要复杂的样式计算，直接检查原生高度即可恢复状态
+        if (el.scrollHeight > COLLAPSE_HEIGHT) {
+          el.classList.add("collapsible");
+        }
       }
-    }
-
-    function checkCollapse(id) {
-      var el = document.getElementById('b' + id);
-      el.style.maxHeight = 'none';
-      if (el.scrollHeight > COLLAPSE_HEIGHT) {
-        el.classList.add("collapsible");
-      } else {
-        el.classList.remove("collapsible");
-      }
-      el.style.maxHeight = '';
     }
 
     function jumpToPage() {
