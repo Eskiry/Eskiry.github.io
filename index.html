@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>layi's record</title>
+  <title>Layi's Record</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
@@ -32,89 +32,80 @@
       --muted: #bbbbbb;
       --sidebar-bg: #1a1a1a;
     }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:"Noto Serif SC",serif;
-      line-height:1.9;
-      font-size:17px;
-      background:var(--bg);
-      color:var(--text);
-      transition:.3s;
-      text-align:left;
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: "Noto Serif SC", serif;
+      line-height: 1.9;
+      font-size: 17px;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
+      text-align: left;
     }
-    .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
+    .container { display: flex; min-height: 100vh; max-width: 1920px; margin: 0 auto; }
 
-    /* 1. 压缩侧边栏宽度到 200px */
-    .sidebar{
-      width:200px;
-      background:var(--sidebar-bg);
-      padding:40px 15px;
-      border-right:1px solid var(--border);
-      position:sticky;
-      top:0;
-      height:100vh;
-      overflow-y:auto;
-      display:flex;
-      flex-direction:column;
-      /* 全部内容居中 */
-      text-align:center;
+    /* 侧边栏 */
+    .sidebar {
+      width: 200px;
+      background: var(--sidebar-bg);
+      padding: 40px 15px;
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
       transition: transform 0.3s ease;
       z-index: 99;
     }
-    .sidebar-main{flex:1;}
-    .sidebar-footer{
-      margin-top:auto;
-      padding-top:20px;
-      border-top:1px solid var(--border);
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.8;
+    .sidebar-main { flex: 1; }
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    .sidebar h2{font-size:22px;margin-bottom:25px;text-align:center}
-    .category-item{
-      padding:10px 12px;
-      margin:6px auto;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:17px;
-      transition:.2s;
+    .sidebar h2 { font-size: 22px; margin-bottom: 25px; }
+    
+    .category-item {
+      padding: 10px 12px;
+      margin: 6px auto;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 17px;
+      transition: 0.2s;
       width: 90%;
     }
-    .category-item.active,.category-item:hover{background:var(--btn-bg);color:var(--btn-text)}
-    .main{flex:1;padding:20px 5% 60px;text-align:left;transition: margin-left 0.3s;}
+    .category-item.active, .category-item:hover { background: var(--btn-bg); color: var(--btn-text); }
+    
+    .main { flex: 1; padding: 20px 5% 60px; transition: margin-left 0.3s; }
 
-    .theme-btn,.random-mini-btn{
-      padding:5px 10px;
-      border-radius:6px;
-      border:none;
-      background:var(--btn-bg);
-      color:var(--btn-text);
-      cursor:pointer;
-      font-size:12px;
-      font-family:inherit;
+    /* 按钮与输入框 */
+    .theme-btn, .random-mini-btn, .search-input {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: none;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
     }
-    .search-input{
-      padding:5px 10px;
-      border-radius:6px;
-      border:1px solid var(--border);
-      background:var(--btn-bg);
-      color:var(--text);
-      font-size:12px;
-      font-family:inherit;
+    .search-input {
+      border: 1px solid var(--border);
+      color: var(--text);
       outline: none;
       width: 100%;
-      margin: 0 auto;
+      cursor: text;
     }
-    .search-input:focus{
-      border-color: var(--btn-text);
-    }
+    .search-input:focus { border-color: var(--btn-text); }
 
-    /* 侧边栏折叠按钮 */
-    .sidebar-toggle{
+    /* 移动端菜单按钮 */
+    .sidebar-toggle {
       position: fixed;
       top: 15px;
       left: 15px;
@@ -129,343 +120,326 @@
       display: none;
     }
 
-    .loading-tip{
-      text-align:left;
-      padding:60px 0;
-      color:var(--muted);
-      font-size:16px;
+    .loading-tip { padding: 60px 0; color: var(--muted); font-size: 16px; }
+    
+    /* 文章样式 (更语义化的article) */
+    .post { padding: 35px 0; border-bottom: 1px solid var(--border); position: relative; }
+    .post h2 { font-size: 20px; font-weight: 600; margin: 0 0 18px 0; line-height: 1.4; }
+    
+    .post-content {
+      font-size: 18px;
+      position: relative;
+      transition: max-height 0.4s;
     }
-    .post{
-      padding:35px 0;
-      border-bottom:1px solid var(--border);
-      position:relative;
-      text-align:left;
+    .post-content.collapsible { max-height: 640px; overflow: hidden; }
+    .post-content.collapsible::after {
+      content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 60px;
+      background: linear-gradient(transparent, var(--mask-end)); pointer-events: none;
     }
-    .post h2{
-      font-size:20px;
-      font-weight:600;
-      margin:0 0 18px 0;
-      color:var(--text);
-      line-height:1.4;
-      text-align:left;
+    .post-content.expand { max-height: none; }
+    .post-content.expand::after { display: none; }
+    
+    /* Markdown 元素内部样式 */
+    .post-content img { max-width: 100%; border-radius: 6px; }
+    .post-content pre, .post-content code { background: var(--code-bg); border-radius: 4px; }
+    .post-content pre { padding: 18px; overflow-x: auto; margin: 18px 0; font-size: 16px; }
+    .post-content code { padding: 3px 6px; font-size: 16px; }
+    
+    .toggle-btn {
+      display: none;
+      margin: 15px 0 0;
+      padding: 6px 14px;
+      background: var(--btn-bg);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--btn-text);
+      border: none;
     }
-    .post-content{
-      font-size:18px;
-      position:relative;
-      transition:max-height .4s;
-      text-align:left;
-      color:var(--text);
-    }
-    .post-content.collapsible{max-height:640px;overflow:hidden}
-    .post-content.collapsible::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:60px;background:linear-gradient(transparent,var(--mask-end));pointer-events:none}
-    .post-content.expand{max-height:3000px;overflow:visible}
-    .post-content.expand::after{display:none}
-    .post-content img{max-width:100%;border-radius:6px}
-    .post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
-    .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
-    .post-content code{padding:3px 6px;font-size:16px}
-    .toggle-btn{
-      display:none;
-      margin:15px 0 0;
-      padding:6px 14px;
-      background:var(--btn-bg);
-      border-radius:6px;
-      cursor:pointer;
-      color:var(--btn-text);
-      border:none;
-    }
-    .post-content.collapsible~.toggle-btn{display:inline-block}
-    .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
-    .page-btn{padding:6px 16px;border-radius:6px;border:none;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
-    .page-btn:disabled{opacity:.5;cursor:not-allowed}
-    .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
+    .post-content.collapsible ~ .toggle-btn, .post-content.expand ~ .toggle-btn { display: inline-block; }
+    
+    /* 分页 */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 40px; flex-wrap: wrap; }
+    .page-btn { padding: 6px 16px; border-radius: 6px; border: none; background: var(--btn-bg); color: var(--btn-text); cursor: pointer; }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .jump-input { width: 60px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center; }
 
-    /* 移动端：小屏自动折叠侧边栏 */
+    /* 移动端适配 */
     @media (max-width: 768px) {
-      .sidebar-toggle{display: block;}
-      .container {flex-direction: column;}
-      /* 默认隐藏侧边栏 */
+      .sidebar-toggle { display: block; }
+      .container { flex-direction: column; }
       .sidebar {
-        width: 200px;
-        height: 100vh;
-        position: fixed;
-        left: 0;
-        top: 0;
-        transform: translateX(-100%);
-        border-right: 1px solid var(--border);
-        border-bottom: none;
+        width: 200px; height: 100vh; position: fixed; left: 0; top: 0;
+        transform: translateX(-100%); border-bottom: none;
       }
-      /* 侧边栏展开状态 */
-      .sidebar.show {
-        transform: translateX(0);
-      }
-      .main {
-        padding: 20px 15px 40px;
-      }
-      .post {padding: 25px 0;}
-      .post h2 {font-size: 18px;}
-      .post-content {font-size: 16px;}
+      .sidebar.show { transform: translateX(0); }
+      .main { padding: 20px 15px 40px; }
+      .post { padding: 25px 0; }
+      .post h2 { font-size: 18px; }
+      .post-content { font-size: 16px; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
-  <!-- 移动端折叠按钮 -->
-  <button class="sidebar-toggle" id="sidebarToggle">菜单</button>
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="切换侧边栏菜单">菜单</button>
 
   <div class="container">
-    <div class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-main">
         <h2>Layi's Records</h2>
-        <div class="category-item active" onclick="filterPosts('all')">全部文章</div>
+        <div id="categoryContainer">
+          <div class="category-item active" data-tag="all">全部文章</div>
+          <!-- 标签由JS动态渲染 -->
+        </div>
       </div>
 
       <div class="sidebar-footer">
-        <input type="text" id="searchInput" class="search-input" placeholder="搜索标题/正文关键词...">
-        <button class="theme-btn" id="themeBtn">日间模式</button>
-        <button class="random-mini-btn" onclick="showRandomPost()">随机</button>
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索标题/正文关键词..." autocomplete="off">
+        <button class="theme-btn" id="themeBtn">夜间模式</button>
+        <button class="random-mini-btn" id="randomBtn">随机文章</button>
       </div>
-    </div>
+    </aside>
 
-    <div class="main">
+    <main class="main">
       <div id="list" class="loading-tip">正在加载文章...</div>
       <div class="pagination" id="pagination"></div>
-    </div>
+    </main>
   </div>
 
   <script>
-    var allPosts = [], allLabels = [], filteredPosts = [];
-    var currentPage = 1;
-    var pageSize = 25, COLLAPSE_HEIGHT = 640;
-    var searchInput = null;
+    // 让 marked 自动解析 Markdown 里的回车换行，不需要自己手动 replace \n
+    marked.use({ breaks: true });
 
-    // 侧边栏折叠切换
-    document.getElementById('sidebarToggle').onclick = function(){
-      document.getElementById('sidebar').classList.toggle('show');
+    let allPosts = [], allLabels = [], filteredPosts = [];
+    let currentPage = 1;
+    const pageSize = 25, COLLAPSE_HEIGHT = 640;
+
+    const DOM = {
+      sidebar: document.getElementById('sidebar'),
+      list: document.getElementById('list'),
+      pagination: document.getElementById('pagination'),
+      searchInput: document.getElementById('searchInput'),
+      themeBtn: document.getElementById('themeBtn'),
+      categoryContainer: document.getElementById('categoryContainer')
     };
 
-    function showRandomPost() {
-      if(!allPosts || allPosts.length === 0) return;
-      var post = allPosts[Math.floor(Math.random() * allPosts.length)];
-      filteredPosts = [post];
-      currentPage = 1;
-      renderPage();
+    // 初始化
+    function init() {
+      initTheme();
+      bindEvents();
+      loadLocalPosts();
     }
 
-    var themeBtn = document.getElementById('themeBtn');
-    var savedTheme = localStorage.getItem('theme');
-    if(savedTheme === 'light'){
-      document.documentElement.removeAttribute('data-theme');
-      themeBtn.textContent = "夜间模式";
-    }else{
-      document.documentElement.setAttribute('data-theme', 'dark');
-      themeBtn.textContent = "日间模式";
-    }
+    // 绑定所有的全局事件
+    function bindEvents() {
+      // 侧边栏开关
+      document.getElementById('sidebarToggle').addEventListener('click', () => {
+        DOM.sidebar.classList.toggle('show');
+      });
 
-    themeBtn.onclick = function() {
-      var dark = document.documentElement.hasAttribute('data-theme');
-      if (dark) {
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        themeBtn.textContent = '夜间模式';
-      } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        themeBtn.textContent = '日间模式';
-      }
-    };
+      // 随机一篇文章
+      document.getElementById('randomBtn').addEventListener('click', () => {
+        if (!allPosts.length) return;
+        filteredPosts = [allPosts[Math.floor(Math.random() * allPosts.length)]];
+        currentPage = 1;
+        renderPage();
+      });
 
-    function initSearch() {
-      searchInput = document.getElementById('searchInput');
-      searchInput.addEventListener('input', function() {
-        doSearch();
+      // 搜索防抖 (停止打字 300ms 后再执行)
+      let searchTimeout;
+      DOM.searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => doSearch(e.target.value), 300);
+      });
+
+      // 侧边栏分类标签事件委托
+      DOM.categoryContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('category-item')) {
+          const tag = e.target.getAttribute('data-tag');
+          filterPosts(tag, e.target);
+        }
+      });
+
+      // 文章"展开/收起"事件委托
+      DOM.list.addEventListener('click', (e) => {
+        if (e.target.classList.contains('toggle-btn')) {
+          const btn = e.target;
+          const content = btn.previousElementSibling; // 获取同级的 post-content
+          content.classList.toggle('expand');
+          btn.textContent = content.classList.contains('expand') ? "收起" : "阅读全文";
+        }
       });
     }
 
-    function doSearch() {
-      var keyword = searchInput.value.trim().toLowerCase();
+    // 初始化主题
+    function initTheme() {
+      const isDark = localStorage.getItem('theme') === 'dark';
+      if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+      DOM.themeBtn.textContent = isDark ? "日间模式" : "夜间模式";
+
+      DOM.themeBtn.addEventListener('click', () => {
+        const dark = document.documentElement.hasAttribute('data-theme');
+        if (dark) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+          DOM.themeBtn.textContent = '夜间模式';
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+          DOM.themeBtn.textContent = '日间模式';
+        }
+      });
+    }
+
+    // 使用现代 fetch API 请求数据
+    async function loadLocalPosts() {
+      try {
+        const res = await fetch('./posts.json');
+        if (!res.ok) throw new Error('网络响应异常');
+        
+        allPosts = await res.json();
+        const tagSet = new Set();
+        
+        allPosts.forEach(post => {
+          (post.labels || []).forEach(tag => tagSet.add(tag));
+        });
+        
+        allLabels = Array.from(tagSet);
+        filteredPosts = [...allPosts];
+        
+        renderCategory();
+        renderPage();
+      } catch (err) {
+        DOM.list.innerHTML = `<p class="loading-tip">加载失败：请检查 posts.json 文件是否存在或格式错误。</p>`;
+      }
+    }
+
+    function doSearch(keyword) {
+      keyword = keyword.trim().toLowerCase();
       currentPage = 1;
       if (!keyword) {
-        filteredPosts = allPosts.slice();
-        renderPage();
-        return;
+        filteredPosts = [...allPosts];
+      } else {
+        filteredPosts = allPosts.filter(post => 
+          (post.title || '').toLowerCase().includes(keyword) || 
+          (post.body || '').toLowerCase().includes(keyword)
+        );
       }
-      filteredPosts = allPosts.filter(function(post) {
-        var title = (post.title || '').toLowerCase();
-        var body = (post.body || '').toLowerCase();
-        return title.includes(keyword) || body.includes(keyword);
-      });
+      // 重置侧边栏高亮为“全部文章”
+      resetCategoryActive('all');
       renderPage();
-    }
-
-    function init() {
-      loadLocalPosts();
-      initSearch();
-    }
-
-    function loadLocalPosts() {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', './posts.json', true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            try {
-              allPosts = JSON.parse(xhr.responseText);
-              var tagSet = new Set();
-              for (var i = 0; i < allPosts.length; i++) {
-                var labels = allPosts[i].labels;
-                for (var j = 0; j < labels.length; j++) {
-                  tagSet.add(labels[j]);
-                }
-              }
-              allLabels = [];
-              tagSet.forEach(function(tag) {
-                allLabels.push(tag);
-              });
-              filteredPosts = allPosts.slice();
-              renderPage();
-              renderCategory();
-            } catch (e) {
-              document.getElementById('list').innerHTML = '<p style="text-align:left;margin-top:50px;color:var(--text)">加载失败：解析错误</p>';
-            }
-          } else {
-            document.getElementById('list').innerHTML = '<p style="text-align:left;margin-top:50px;color:var(--text)">加载失败：请检查 posts.json 文件是否存在</p>';
-          }
-        }
-      };
-      xhr.send(null);
     }
 
     function renderCategory() {
-      var side = document.getElementById('sidebar').querySelector('.sidebar-main');
-      for (var i = 0; i < allLabels.length; i++) {
-        var tag = allLabels[i];
-        var div = document.createElement('div');
+      allLabels.forEach(tag => {
+        const div = document.createElement('div');
         div.className = 'category-item';
         div.textContent = tag;
-        div.onclick = function() {
-          filterPosts(this.textContent);
-        };
-        side.appendChild(div);
-      }
+        div.setAttribute('data-tag', tag);
+        DOM.categoryContainer.appendChild(div);
+      });
     }
 
-    function filterPosts(tag) {
-      var items = document.querySelectorAll('.category-item');
-      for (var i = 0; i < items.length; i++) {
-        items[i].classList.remove('active');
-      }
-      var activeEl = event ? event.target : this;
-      activeEl.classList.add('active');
-      
-      if(searchInput) searchInput.value = '';
+    function resetCategoryActive(activeTag) {
+      const items = DOM.categoryContainer.querySelectorAll('.category-item');
+      items.forEach(el => {
+        if (el.getAttribute('data-tag') === activeTag) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    }
+
+    function filterPosts(tag, targetEl) {
+      resetCategoryActive(tag);
+      if (DOM.searchInput.value) DOM.searchInput.value = ''; // 清空搜索框
       
       currentPage = 1;
-      if (tag === 'all') {
-        filteredPosts = allPosts.slice();
-      } else {
-        filteredPosts = [];
-        for (var i = 0; i < allPosts.length; i++) {
-          if (allPosts[i].labels.indexOf(tag) !== -1) {
-            filteredPosts.push(allPosts[i]);
-          }
-        }
-      }
+      filteredPosts = tag === 'all' 
+        ? [...allPosts] 
+        : allPosts.filter(post => post.labels.includes(tag));
+      
       renderPage();
     }
 
     function renderPage() {
-      var total = Math.ceil(filteredPosts.length / pageSize);
-      var start = (currentPage - 1) * pageSize;
+      const total = Math.ceil(filteredPosts.length / pageSize);
+      const start = (currentPage - 1) * pageSize;
       renderPosts(filteredPosts.slice(start, start + pageSize));
       renderPagination(total);
     }
 
     function renderPosts(posts) {
-      if (posts.length === 0) {
-        document.getElementById('list').innerHTML = "<p style='text-align:left;margin-top:50px;color:var(--text)'>暂无匹配的文章</p>";
-        return;
-      }
-      var html = '';
-      for (var i = 0; i < posts.length; i++) {
-        var art = posts[i];
-        var id = i + 1;
-        var bodyWithBr = art.body.replace(/\n/g, '<br>');
-        html += '<div class="post"><h2>' + art.title + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
-      }
-      document.getElementById('list').innerHTML = html;
-      for (var i = 0; i < posts.length; i++) {
-        var id = i + 1;
-        setTimeout(function() {
-          checkCollapse(id);
-        }, 0);
-      }
-    }
-
-    function toggleBody(id) {
-      var el = document.getElementById('b' + id);
-      var btn = document.getElementById('tb' + id);
-      el.classList.toggle("expand");
-      if (el.classList.contains("expand")) {
-        btn.textContent = "收起";
-        el.classList.remove("collapsible");
-      } else {
-        btn.textContent = "阅读全文";
-        setTimeout(function() {
-          checkCollapse(id);
-        }, 0);
-      }
-    }
-
-    function checkCollapse(id) {
-      var el = document.getElementById('b' + id);
-      el.style.maxHeight = 'none';
-      if (el.scrollHeight > COLLAPSE_HEIGHT) {
-        el.classList.add("collapsible");
-      } else {
-        el.classList.remove("collapsible");
-      }
-      el.style.maxHeight = '';
-    }
-
-    function jumpToPage() {
-      var total = Math.ceil(filteredPosts.length / pageSize);
-      var input = document.getElementById('jumpInput');
-      var page = parseInt(input.value.trim());
-      
-      if (isNaN(page)) return;
-      page = Math.max(1, Math.min(page, total));
-      currentPage = page;
-      renderPage();
-      scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function renderPagination(total) {
-      var wrap = document.getElementById('pagination');
-      if (total <= 1) {
-        wrap.innerHTML = '';
+      if (!posts.length) {
+        DOM.list.innerHTML = "<p class='loading-tip'>暂无匹配的文章</p>";
         return;
       }
       
-      wrap.innerHTML = '<button class="page-btn" onclick="prev()" ' + (currentPage === 1 ? 'disabled' : '') + '>上一页</button><span>' + currentPage + '/' + total + '</span><button class="page-btn" onclick="next()" ' + (currentPage === total ? 'disabled' : '') + '>下一页</button><input type="number" class="jump-input" id="jumpInput" min="1" max="' + total + '" placeholder="页码" /><button class="page-btn" onclick="jumpToPage()">跳转</button>';
-      
-      document.getElementById('jumpInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') jumpToPage();
+      let html = '';
+      posts.forEach(art => {
+        // 由于配置了 marked.use({ breaks: true }), 不再需要 replace \n
+        html += `
+          <article class="post">
+            <h2>${art.title}</h2>
+            <div class="post-content">${marked.parse(art.body || '')}</div>
+            <button class="toggle-btn">阅读全文</button>
+          </article>`;
+      });
+      DOM.list.innerHTML = html;
+
+      // 使用 requestAnimationFrame 等待 DOM 渲染完毕后再计算高度
+      requestAnimationFrame(() => {
+        const contents = DOM.list.querySelectorAll('.post-content');
+        contents.forEach(el => {
+          if (el.scrollHeight > COLLAPSE_HEIGHT) {
+            el.classList.add('collapsible');
+          }
+        });
       });
     }
 
-    function prev() { 
-      currentPage--; 
-      renderPage(); 
-      scrollTo({top:0,behavior:'smooth'});
+    function renderPagination(total) {
+      if (total <= 1) {
+        DOM.pagination.innerHTML = '';
+        return;
+      }
+      
+      DOM.pagination.innerHTML = `
+        <button class="page-btn" id="prevBtn" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
+        <span>${currentPage} / ${total}</span>
+        <button class="page-btn" id="nextBtn" ${currentPage === total ? 'disabled' : ''}>下一页</button>
+        <input type="number" class="jump-input" id="jumpInput" min="1" max="${total}" placeholder="页码">
+        <button class="page-btn" id="jumpBtn">跳转</button>
+      `;
+
+      document.getElementById('prevBtn').onclick = () => turnPage(-1);
+      document.getElementById('nextBtn').onclick = () => turnPage(1);
+      
+      const jumpInput = document.getElementById('jumpInput');
+      const performJump = () => {
+        const page = parseInt(jumpInput.value.trim());
+        if (!isNaN(page)) {
+          currentPage = Math.max(1, Math.min(page, total));
+          renderPage();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+      
+      document.getElementById('jumpBtn').onclick = performJump;
+      jumpInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') performJump();
+      });
     }
-    function next() { 
-      currentPage++; 
-      renderPage(); 
-      scrollTo({top:0,behavior:'smooth'});
+
+    function turnPage(delta) {
+      currentPage += delta;
+      renderPage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
+
+    // 启动应用
     init();
   </script>
 </body>
