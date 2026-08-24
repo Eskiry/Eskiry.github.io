@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    /* CSS 完全保持不变 */
     :root {
       --bg: #ffffff;
       --text: #111111;
@@ -178,6 +177,19 @@
     .page-btn:disabled{opacity:.5;cursor:not-allowed}
     .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
 
+    /* 本地文件降级选择框样式 */
+    #fallbackBox {
+      padding: 25px;
+      border: 2px dashed var(--btn-text);
+      border-radius: 8px;
+      background: var(--card-bg);
+      margin-top: 50px;
+    }
+    #fallbackBox input[type="file"] {
+      margin-top: 10px;
+      color: var(--text);
+    }
+
     @media (max-width: 768px) {
       .sidebar-toggle{display: block;}
       .container {flex-direction: column;}
@@ -224,6 +236,16 @@
 
     <div class="main">
       <div id="list" class="loading-tip">正在加载文章...</div>
+      
+      <div id="fallbackBox" style="display: none;">
+        <h3 style="margin-bottom: 10px; color: var(--btn-text);">⚠️ 无法自动加载 posts.json</h3>
+        <p style="font-size: 15px; color: var(--muted); margin-bottom: 12px;">
+          常见原因：双击本地打开 HTML 受到浏览器的跨域安全限制 (CORS)。
+        </p>
+        <p style="font-size: 15px;"><b>请点击下方按钮，手动选择你本地的 <code>posts.json</code> 文件：</b></p>
+        <input type="file" id="localJsonFile" accept=".json" onchange="loadUserLocalJson(this)">
+      </div>
+
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
@@ -269,12 +291,11 @@
       }
     };
 
-    // 【优化2】搜索防抖控制
     function initSearch() {
       searchInput = document.getElementById('searchInput');
       searchInput.addEventListener('input', function() {
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(doSearch, 200); // 用户停顿200ms后才计算
+        searchTimer = setTimeout(doSearch, 200); 
       });
     }
 
@@ -289,7 +310,6 @@
       filteredPosts = allPosts.filter(function(post) {
         var title = (post.title || '').toLowerCase();
         var body = (post.body || '').toLowerCase();
-        // indexOf 在大批量字符匹配时底层性能略优于 includes
         return title.indexOf(keyword) !== -1 || body.indexOf(keyword) !== -1; 
       });
       renderPage();
@@ -300,6 +320,23 @@
       initSearch();
     }
 
+    // 核心处理函数：解析并构建数据
+    function processPostsData(rawData) {
+      allPosts = rawData;
+      var tagSet = new Set();
+      for (var i = 0; i < allPosts.length; i++) {
+        var labels = allPosts[i].labels || []; 
+        for (var j = 0; j < labels.length; j++) {
+          tagSet.add(labels[j]);
+        }
+      }
+      allLabels = Array.from(tagSet);
+      
+      filteredPosts = allPosts.slice();
+      renderPage();
+      renderCategory();
+    }
+
     function loadLocalPosts() {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', './posts.json', true);
@@ -307,32 +344,52 @@
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
             try {
-              allPosts = JSON.parse(xhr.responseText);
-              var tagSet = new Set();
-              for (var i = 0; i < allPosts.length; i++) {
-                var labels = allPosts[i].labels || []; // 容错处理
-                for (var j = 0; j < labels.length; j++) {
-                  tagSet.add(labels[j]);
-                }
-              }
-              // 【优化4】直接转换 Array 更高效
-              allLabels = Array.from(tagSet);
-              
-              filteredPosts = allPosts.slice();
-              renderPage();
-              renderCategory();
+              var parsedData = JSON.parse(xhr.responseText);
+              processPostsData(parsedData);
             } catch (e) {
-              document.getElementById('list').innerHTML = '<p style="text-align:left;margin-top:50px;color:var(--text)">加载失败：解析错误</p>';
+              showFallback("加载失败：JSON 解析错误");
             }
           } else {
-            document.getElementById('list').innerHTML = '<p style="text-align:left;margin-top:50px;color:var(--text)">加载失败：请检查 posts.json 文件是否存在</p>';
+            showFallback("加载失败：请检查 posts.json 文件是否存在");
           }
         }
+      };
+      // 针对部分由于跨域或无服务直接触发 onerror 的情况
+      xhr.onerror = function() {
+        showFallback("加载失败：网络或跨域受限");
       };
       xhr.send(null);
     }
 
-    // 【优化3】DOM 碎片化批量插入
+    // 触发降级显示
+    function showFallback(msg) {
+      document.getElementById('list').innerHTML = '';
+      document.getElementById('fallbackBox').style.display = 'block';
+    }
+
+    // 用户通过本地文件选择框引入 posts.json
+    function loadUserLocalJson(inputElement) {
+      const file = inputElement.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.readAsText(file, 'UTF-8');
+      reader.onload = function(e) {
+        try {
+          const parsedData = JSON.parse(e.target.result);
+          if(!Array.isArray(parsedData)) {
+            alert('解析失败：JSON 根节点必须是数组格式！');
+            return;
+          }
+          // 隐藏降级提示框
+          document.getElementById('fallbackBox').style.display = 'none';
+          processPostsData(parsedData);
+        } catch (err) {
+          alert('JSON 解析失败，请确认选择的是正确的 posts.json 文件。');
+        }
+      };
+    }
+
     function renderCategory() {
       var side = document.getElementById('sidebar').querySelector('.sidebar-main');
       var fragment = document.createDocumentFragment(); 
@@ -346,7 +403,7 @@
         };
         fragment.appendChild(div);
       }
-      side.appendChild(fragment); // 循环结束后仅触发1次回流
+      side.appendChild(fragment); 
     }
 
     function filterPosts(tag) {
@@ -380,7 +437,6 @@
       renderPagination(total);
     }
 
-    // 【优化1】批量读写消除 Layout Thrashing，弃用 setTimeout
     function renderPosts(posts) {
       var listEl = document.getElementById('list');
       if (posts.length === 0) {
@@ -392,12 +448,11 @@
       for (var i = 0; i < posts.length; i++) {
         var art = posts[i];
         var id = i + 1;
-        var bodyWithBr = (art.body || '').replace(/\n/g, '<br>'); // 容错处理
+        var bodyWithBr = (art.body || '').replace(/\n/g, '<br>'); 
         html += '<div class="post"><h2>' + (art.title || '') + '</h2><div class="post-content" id="b' + id + '">' + marked.parse(bodyWithBr) + '</div><button class="toggle-btn" id="tb' + id + '" onclick="toggleBody(' + id + ')">阅读全文</button></div>';
       }
-      listEl.innerHTML = html; // 一次性渲染
+      listEl.innerHTML = html; 
 
-      // DOM 写入完毕后，统一读取元素的原生高度，避免浏览器重排
       var contents = listEl.querySelectorAll('.post-content');
       for (var k = 0; k < contents.length; k++) {
         if (contents[k].scrollHeight > COLLAPSE_HEIGHT) {
@@ -415,7 +470,6 @@
         el.classList.remove("collapsible");
       } else {
         btn.textContent = "阅读全文";
-        // 收起时不再需要复杂的样式计算，直接检查原生高度即可恢复状态
         if (el.scrollHeight > COLLAPSE_HEIGHT) {
           el.classList.add("collapsible");
         }
