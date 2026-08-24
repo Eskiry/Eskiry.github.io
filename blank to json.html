@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>想法日志增量管理与汇总工具</title>
+<style>
+body{font-family:"微软雅黑",sans-serif;padding:30px;max-width:1000px;margin:0 auto;background:#f5f7fa;}
+.container{background:#fff;padding:25px;border-radius:10px;box-shadow:0 2px 15px #ddd;}
+h3{margin-top:0;color:#333;}
+textarea,input{width:100%;padding:12px;margin:8px 0;border:1px #ccc solid;border-radius:6px;box-sizing:border-box;font-size:14px;}
+textarea{height:160px;resize:vertical;}
+input{height:42px;}
+button{padding:10px 18px;margin:6px 4px;border:none;border-radius:6px;background:#2d8cf0;color:#fff;cursor:pointer;font-size:14px;}
+button:hover{background:#1b76d8;}
+.btn-green{background:#19be6b;}
+.btn-green:hover{background:#18a863;}
+.btn-orange{background:#ff9900;}
+.btn-orange:hover{background:#e08800;}
+.box-section{padding:15px;border:1px solid #e8e8e8;border-radius:6px;margin:15px 0;background:#fafafa;}
+.list{margin-top:20px;padding:15px;background:#fff;border:1px solid #eee;border-radius:6px;max-height:350px;overflow:auto;}
+.item{padding:10px;border-bottom:1px #eee dashed;line-height:1.6;display:flex;justify-content:space-between;align-items:center;}
+.item-info{flex:1;}
+.del-btn{background:#ed3f14;padding:4px 8px;font-size:12px;margin-left:10px;}
+.del-btn:hover{background:#da3510;}
+.action-bar {display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;}
+</style>
+</head>
+<body>
+<div class="container">
+    <h3>💡 每日想法日志增量管理与汇总工具</h3>
+
+    <!-- 第一步：导入现有 JSON 底库 -->
+    <div class="box-section" style="border-left: 4px solid #2d8cf0;">
+        <h4>步骤 1：同步已有数据（可选）</h4>
+        <p style="font-size: 13px; color: #666; margin-bottom: 8px;">如果你之前已经生成过 <code>thoughts.json</code>，请先在这里导入它，以便进行后续的增量追加。</p>
+        <input type="file" id="jsonFile" accept=".json">
+        <button class="btn-green" onclick="loadExistingJson()">导入现有 thoughts.json 底库</button>
+    </div>
+
+    <!-- 第二步：上传单个或多个每日 TXT 文件 -->
+    <div class="box-section" style="border-left: 4px solid #19be6b;">
+        <h4>步骤 2：导入每日想法 TXT 文件</h4>
+        <p style="font-size: 13px; color: #666; margin-bottom: 8px;">文件名如 <code>2026-08-24.txt</code> 或 <code>20260824.txt</code> 将自动被识别为标题。可多选批量拖入。</p>
+        <input type="file" id="txtFiles" accept=".txt" multiple>
+        <button onclick="uploadTxts()">解析并追加到列表中</button>
+    </div>
+
+    <!-- 手动补充录入 -->
+    <div class="box-section" style="border-left: 4px solid #ff9900;">
+        <h4>手动单条补充/修改</h4>
+        <input type="text" id="title" placeholder="标题（例如：2026-08-24 或 自定义想法标题）">
+        <textarea id="body" placeholder="在这里输入或粘贴想法正文..."></textarea>
+        <button onclick="addItem()">添加 / 更新到列表</button>
+    </div>
+
+    <!-- 导出控制区 -->
+    <div class="action-bar">
+        <button class="btn-green" onclick="exportJson()" style="font-size: 15px; padding: 12px 20px; flex: 1;">📥 导出网页用的 thoughts.json (降序)</button>
+        <button class="btn-orange" onclick="exportSummaryTxt()" style="font-size: 15px; padding: 12px 20px; flex: 1;">📄 导出本地浏览的汇总.txt (倒序)</button>
+        <button onclick="clearAll()" style="background: #ed3f14;">清空全部数据</button>
+    </div>
+
+    <div class="list" id="listBox">
+        <div><b>当前内存中已加载的想法列表 (共 0 条)：</b></div>
+    </div>
+</div>
+
+<script>
+let dataList = [];
+
+// 全局统一排序：由新到旧（按标题降序，智能识别数字/日期）
+function sortDataList() {
+    dataList.sort((a, b) => b.title.localeCompare(a.title, undefined, {numeric: true, sensitivity: 'base'}));
+}
+
+// 1. 导入已有的 thoughts.json
+function loadExistingJson(){
+    const fileInput = document.getElementById('jsonFile');
+    const file = fileInput.files[0];
+    if(!file){
+        alert('请先选择现有的 thoughts.json 文件！');
+        return;
+    }
+    const reader = new FileReader();
+    reader.readAsText(file, 'UTF-8');
+    reader.onload = function(e){
+        try {
+            const parsed = JSON.parse(e.target.result);
+            if(!Array.isArray(parsed)){
+                alert('格式错误：JSON 根节点必须是数组！');
+                return;
+            }
+            dataList = dataList.concat(parsed);
+            sortDataList();
+            refreshList();
+            alert(`成功导入底库！当前共有 ${dataList.length} 条数据。`);
+        } catch(err) {
+            alert('JSON 解析失败，请确认文件正确。');
+        }
+    }
+}
+
+// 2. 批量上传解析 TXT 文件
+function uploadTxts(){
+    const fileInput = document.getElementById('txtFiles');
+    const files = fileInput.files;
+    if(files.length === 0){
+        alert('请先选择至少一个 txt 文件！');
+        return;
+    }
+
+    let loadedCount = 0;
+    let pendingFiles = files.length;
+
+    for(let i=0; i<files.length; i++){
+        let file = files.item(i);
+        let fileName = file.name;
+        let title = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
+        
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = (function(t) {
+            return function(e) {
+                const text = e.target.result.trim();
+                if(text){
+                    let existingIndex = dataList.findIndex(item => item.title === t);
+                    if(existingIndex !== -1){
+                        dataList[existingIndex].body = text;
+                    } else {
+                        dataList.push({
+                            title: t,
+                            body: text,
+                            labels: ["想法"]
+                        });
+                    }
+                    loadedCount++;
+                }
+                pendingFiles--;
+                if(pendingFiles === 0){
+                    sortDataList();
+                    refreshList();
+                    alert(`解析完成！成功导入/更新了 ${loadedCount} 个文件。`);
+                }
+            };
+        })(title);
+    }
+}
+
+// 3. 手动添加单条
+function addItem(){
+    let title = document.getElementById('title').value.trim();
+    let body = document.getElementById('body').value.trim();
+    if(!body){
+        alert('请输入正文内容！');
+        return;
+    }
+    if(!title) {
+        let d = new Date();
+        title = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    let existingIndex = dataList.findIndex(item => item.title === title);
+    if(existingIndex !== -1){
+        dataList[existingIndex].body = body;
+        alert(`标题 "${title}" 已存在，已为您自动更新该条内容！`);
+    } else {
+        dataList.push({
+            title: title,
+            body: body,
+            labels: ["想法"]
+        });
+        alert('添加成功！');
+    }
+
+    sortDataList();
+    refreshList();
+    document.getElementById('body').value = '';
+}
+
+// 删除单条
+function deleteItem(index){
+    if(confirm(`确定删除标题为 "${dataList[index].title}" 的这条想法吗？`)){
+        dataList.splice(index, 1);
+        refreshList();
+    }
+}
+
+// 刷新列表预览
+function refreshList(){
+    let html = `<b>当前内存中已加载的想法列表 (共 ${dataList.length} 条，已按由新到旧排序)：</b><br><br>`;
+    if(dataList.length === 0){
+        html += "<div style='color:#999;'>暂无数据，请先导入或添加。</div>";
+    }
+    dataList.forEach((item,idx)=>{
+        html += `<div class="item">
+            <div class="item-info">
+                <b>[${idx+1}] 标题：</b>${item.title}<br>
+                <b>正文预览：</b>${item.body.slice(0, 80).replace(/\n/g, ' ')}...
+            </div>
+            <button class="del-btn" onclick="deleteItem(${idx})">删除</button>
+        </div>`;
+    });
+    document.getElementById('listBox').innerHTML = html;
+}
+
+// 4. 导出 JSON
+function exportJson(){
+    if(dataList.length === 0){
+        alert('暂无数据可导出！');
+        return;
+    }
+    sortDataList();
+    let jsonStr = JSON.stringify(dataList, null, 2);
+    let blob = new Blob([jsonStr], {type:'application/json'});
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'thoughts.json';
+    a.click();
+}
+
+// 5. 导出本地直接浏览的汇总 TXT 文件（由新到旧倒序排版）
+function exportSummaryTxt(){
+    if(dataList.length === 0){
+        alert('暂无数据可导出！');
+        return;
+    }
+    sortDataList(); // 确保倒序
+
+    let txtContent = "";
+    dataList.forEach(item => {
+        // 为每个想法加一个好看的排版分隔，方便直接双击在本地用记事本阅读
+        txtContent += `==============================\n`;
+        txtContent += `【标题】${item.title}\n`;
+        txtContent += `==============================\n\n`;
+        txtContent += `${item.body}\n\n\n`;
+    });
+
+    let blob = new Blob([txtContent], {type:'text/plain;charset=utf-8'});
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'thoughts_summary.txt';
+    a.click();
+}
+
+// 清空所有
+function clearAll(){
+    if(confirm('确定清空当前内存中的所有数据吗？')) {
+        dataList = [];
+        refreshList();
+    }
+}
+</script>
+</body>
+</html>
