@@ -208,10 +208,38 @@
     .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
     .post-content code{padding:3px 6px;font-size:16px}
 
-    .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
-    .page-btn{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
-    .page-btn:disabled{opacity:.5;cursor:not-allowed}
-    .jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
+    /* 统一页码部分的字体设置 */
+    .pagination{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:12px;
+      margin-top:40px;
+      flex-wrap:wrap;
+      font-family:inherit;
+      font-size: 16px;
+    }
+    .page-btn{
+      padding:6px 16px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:var(--btn-bg);
+      color:var(--btn-text);
+      cursor:pointer;
+      font-family:inherit;
+      font-size: 15px;
+    }
+    .jump-input{
+      width:50px;
+      padding:6px 8px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:var(--bg);
+      color:var(--text);
+      text-align:center;
+      font-family:inherit;
+      font-size: 15px;
+    }
 
     #fallbackBox {
       padding: 25px;
@@ -319,7 +347,6 @@
     sidebarOverlay.addEventListener('click', toggleSidebar);
 
     function showRandomPost() {
-      // 优化：根据当前分类范围获取随机池，避免全量全局随机错乱
       let targetList = [];
       if (activeCategory === 'THOUGHTS') {
         targetList = allThoughts;
@@ -492,7 +519,6 @@
     function selectCategory(cat, eventObj) {
       activeCategory = cat;
       
-      // 优化：统一高亮逻辑，通过 DOM 遍历精准匹配激活状态，避免重复查询和冗余分配
       document.querySelectorAll('.category-item').forEach(el => {
         if ((cat === 'THOUGHTS' && el.textContent === '想法') || (el.textContent === cat)) {
           el.classList.add('active');
