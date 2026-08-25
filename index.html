@@ -1,659 +1,641 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eskiry's record</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --bg: #fbf7ec;
-      --text: #2c2c2c;
-      --border: #e6dec5;
-      --card-bg: #f4efdf;
-      --code-bg: #eee7d3;
-      --btn-bg: #f0e8d0;
-      --btn-text: #8c5822;
-      --muted: #6b6353;
-      --sidebar-bg: #f6efe2;
-    }
-    
-    [data-theme="dark"] {
-      --bg: #161618;
-      --text: #e1e1e6;
-      --border: #2a2a2e;
-      --card-bg: #1e1e22;
-      --code-bg: #26262b;
-      --btn-bg: #26262b;
-      --btn-text: #528bff;
-      --muted: #9c9ca6;
-      --sidebar-bg: #1a1a1e;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Eskiry's record</title>
+  <!-- 引入 Noto Serif SC（思源宋体）的官方网页子集 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
 
-    [data-theme="eink"] {
-      --bg: #ffffff;
-      --text: #000000;
-      --border: #000000;
-      --card-bg: #ffffff;
-      --code-bg: #f0f0f0;
-      --btn-bg: #ffffff;
-      --btn-text: #000000;
-      --muted: #000000;
-      --sidebar-bg: #ffffff;
-    }
+<style>
+:root {
+--bg: #fbf7ec;
+--text: #2c2c2c;
+--border: #e6dec5;
+--card-bg: #f4efdf;
+--code-bg: #eee7d3;
+--btn-bg: #f0e8d0;
+--btn-text: #8c5822;
+--muted: #6b6353;
+--sidebar-bg: #f6efe2;
+}
 
-    [data-theme="eink"] * {
-      transition: none !important;
-    }
+[data-theme="dark"] {
+--bg: #161618;
+--text: #e1e1e6;
+--border: #2a2a2e;
+--card-bg: #1e1e22;
+--code-bg: #26262b;
+--btn-bg: #26262b;
+--btn-text: #528bff;
+--muted: #9c9ca6;
+--sidebar-bg: #1a1a1e;
+}
 
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family: "Noto Serif SC", "FZPingXianYaSong-R-GB", "方正屏显雅宋简体","LXGW WenKai Screen", "LXGWWenKaiScreen", serif;
-      line-height:1.9;
-      font-size:17px;
-      background:var(--bg);
-      color:var(--text);
-      transition: background .3s, color .3s;
-      text-align:left;
-    }
-    .container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
+[data-theme="eink"] {
+--bg: #ffffff;
+--text: #000000;
+--border: #000000;
+--card-bg: #ffffff;
+--code-bg: #f0f0f0;
+--btn-bg: #ffffff;
+--btn-text: #000000;
+--muted: #000000;
+--sidebar-bg: #ffffff;
+}
 
-    .sidebar{
-      width:220px;
-      background:var(--sidebar-bg);
-      padding:40px 15px;
-      border-right:1px solid var(--border);
-      position:sticky;
-      top:0;
-      height:100vh;
-      overflow-y:auto;
-      display:flex;
-      flex-direction:column;
-      text-align:center;
-      transition: transform 0.3s ease;
-      z-index: 99;
-    }
-    .sidebar-main{flex:1;}
-    .sidebar-footer{
-      margin-top:auto;
-      padding-top:20px;
-      border-top:1px solid var(--border);
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.8;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .sidebar h2{font-size:22px;margin-bottom:20px;text-align:center}
+[data-theme="eink"] * {
+transition: none !important;
+}
 
-    .category-item{
-      padding:10px 12px;
-      margin:6px auto;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:17px;
-      transition:.2s;
-      width: 90%;
-    }
-    .category-item.active,.category-item:hover{
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      font-weight: 600;
-    }
-    [data-theme="eink"] .category-item.active, 
-    [data-theme="eink"] .category-item:hover {
-      background: #000000;
-      color: #ffffff;
-    }
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family: "Noto Serif SC", "FZPingXianYaSong-R-GB", "方正屏显雅宋简体","LXGW WenKai Screen", "LXGWWenKaiScreen", serif;
+line-height:1.9;
+font-size:17px;
+background:var(--bg);
+color:var(--text);
+transition: background .3s, color .3s;
+text-align:left;
+}
+.container{display:flex;min-height:100vh;max-width:1920px;margin:0 auto}
 
-    .main{flex:1;padding:20px 5% 60px;text-align:left;transition: margin-left 0.3s;}
+.sidebar{
+width:220px;
+background:var(--sidebar-bg);
+padding:40px 15px;
+border-right:1px solid var(--border);
+position:sticky;
+top:0;
+height:100vh;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+text-align:center;
+transition: transform 0.3s ease;
+z-index: 99;
+}
+.sidebar-main{flex:1;}
+.sidebar-footer{
+margin-top:auto;
+padding-top:20px;
+border-top:1px solid var(--border);
+text-align:center;
+font-size:12px;
+color:var(--muted);
+line-height:1.8;
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+.sidebar h2{font-size:22px;margin-bottom:20px;text-align:center}
 
-    .theme-btn,.random-mini-btn{
-      padding:6px 10px;
-      border-radius:6px;
-      border: 1px solid var(--border);
-      background:var(--btn-bg);
-      color:var(--btn-text);
-      cursor:pointer;
-      font-size:12px;
-      font-family:inherit;
-    }
-    
-    [data-theme="eink"] .theme-btn, 
-    [data-theme="eink"] .random-mini-btn,
-    [data-theme="eink"] .search-input,
-    [data-theme="eink"] .page-btn,
-    [data-theme="eink"] .jump-input,
-    [data-theme="eink"] .sidebar-toggle {
-      border: 1px solid #000000 !important;
-    }
+.category-item{
+padding:10px 12px;
+margin:6px auto;
+border-radius:8px;
+cursor:pointer;
+font-size:17px;
+transition:.2s;
+width: 90%;
+}
+.category-item.active,.category-item:hover{
+background: var(--btn-bg);
+color: var(--btn-text);
+font-weight: 600;
+}
+[data-theme="eink"] .category-item.active, 
+[data-theme="eink"] .category-item:hover {
+background: #000000;
+color: #ffffff;
+}
 
-    .search-input{
-      padding:5px 10px;
-      border-radius:6px;
-      border:1px solid var(--border);
-      background:var(--btn-bg);
-      color:var(--text);
-      font-size:12px;
-      font-family:inherit;
-      outline: none;
-      width: 100%;
-      margin: 0 auto;
-    }
-    .search-input:focus{
-      border-color: var(--btn-text);
-    }
+.main{flex:1;padding:20px 5% 60px;text-align:left;transition: margin-left 0.3s;}
 
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.3);
-      z-index: 98;
-    }
-    .sidebar-overlay.show { display: block; }
+.theme-btn,.random-mini-btn{
+padding:6px 10px;
+border-radius:6px;
+border: 1px solid var(--border);
+background:var(--btn-bg);
+color:var(--btn-text);
+cursor:pointer;
+font-size:12px;
+font-family:inherit;
+}
 
-    .sidebar-toggle{
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      z-index: 100;
-      padding: 5px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      cursor: pointer;
-      font-size: 13px;
-      display: none;
-      font-family: inherit;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
+[data-theme="eink"] .theme-btn, 
+[data-theme="eink"] .random-mini-btn,
+[data-theme="eink"] .search-input,
+[data-theme="eink"] .page-btn,
+[data-theme="eink"] .jump-input,
+[data-theme="eink"] .sidebar-toggle {
+border: 1px solid #000000 !important;
+}
 
-    .post{
-      padding:35px 0;
-      border-bottom:1px solid var(--border);
-      position:relative;
-      text-align:left;
-    }
-    .post h2{
-      font-size:20px;
-      font-weight:600;
-      margin:0 0 18px 0;
-      color:var(--text);
-      line-height:1.4;
-      text-align:left;
-    }
-    
-    .thought-meta {
-      text-align: right;
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 12px;
-      font-style: italic;
-    }
+.search-input{
+padding:5px 10px;
+border-radius:6px;
+border:1px solid var(--border);
+background:var(--btn-bg);
+color:var(--text);
+font-size:12px;
+font-family:inherit;
+outline: none;
+width: 100%;
+margin: 0 auto;
+}
+.search-input:focus{
+border-color: var(--btn-text);
+}
 
-    .post-content{
-      font-size:18px;
-      position:relative;
-      text-align:left;
-      color:var(--text);
-    }
-    .post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
-    .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
-    .post-content code{padding:3px 6px;font-size:16px}
+.sidebar-overlay {
+display: none;
+position: fixed;
+top: 0; left: 0; width: 100vw; height: 100vh;
+background: rgba(0,0,0,0.3);
+z-index: 98;
+}
+.sidebar-overlay.show { display: block; }
 
-    /* 统一页码部分的字体设置 */
-    .pagination{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:12px;
-      margin-top:40px;
-      flex-wrap:wrap;
-      font-family:inherit;
-      font-size: 16px;
-    }
-    .page-btn{
-      padding:6px 16px;
-      border-radius:6px;
-      border:1px solid var(--border);
-      background:var(--btn-bg);
-      color:var(--btn-text);
-      cursor:pointer;
-      font-family:inherit;
-      font-size: 15px;
-    }
-    .jump-input{
-      width:50px;
-      padding:6px 8px;
-      border-radius:6px;
-      border:1px solid var(--border);
-      background:var(--bg);
-      color:var(--text);
-      text-align:center;
-      font-family:inherit;
-      font-size: 15px;
-    }
+.sidebar-toggle{
+position: fixed;
+top: 15px;
+left: 15px;
+z-index: 100;
+padding: 5px 12px;
+border-radius: 6px;
+border: 1px solid var(--border);
+background: var(--btn-bg);
+color: var(--btn-text);
+cursor: pointer;
+font-size: 13px;
+display: none;
+font-family: inherit;
+box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
 
-    #fallbackBox {
-      padding: 25px;
-      border: 2px dashed var(--btn-text);
-      border-radius: 8px;
-      background: var(--card-bg);
-      margin-bottom: 20px;
-    }
-    .fallback-file-item {
-      padding: 12px;
-      margin-top: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg);
-    }
+.post{
+padding:35px 0;
+border-bottom:1px solid var(--border);
+position:relative;
+text-align:left;
+}
+.post h2{
+font-size:20px;
+font-weight:600;
+margin:0 0 18px 0;
+color:var(--text);
+line-height:1.4;
+text-align:left;
+}
 
-    @media (max-width: 768px) {
-      .sidebar-toggle{display: block;}
-      .container {flex-direction: column;}
-      .sidebar {
-        width: 210px;
-        height: 100vh;
-        position: fixed;
-        left: 0;
-        top: 0;
-        transform: translateX(-100%);
-        border-right: 1px solid var(--border);
-        border-bottom: none;
-      }
-      .sidebar.show {
-        transform: translateX(0);
-      }
-      .main {
-        padding: 60px 15px 40px; 
-      }
-      .post {padding: 25px 0;}
-      .post h2 {font-size: 18px;}
-      .post-content {font-size: 16px;}
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+.thought-meta {
+text-align: right;
+font-size: 14px;
+color: var(--muted);
+margin-top: 12px;
+font-style: italic;
+}
+
+.post-content{
+font-size:18px;
+position:relative;
+text-align:left;
+color:var(--text);
+}
+.post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
+.post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
+.post-content code{padding:3px 6px;font-size:16px}
+
+.pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
+.page-btn{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
+.page-btn:disabled{opacity:.5;cursor:not-allowed}
+.jump-input{width:50px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;}
+
+#fallbackBox {
+padding: 25px;
+border: 2px dashed var(--btn-text);
+border-radius: 8px;
+background: var(--card-bg);
+margin-bottom: 20px;
+}
+.fallback-file-item {
+padding: 12px;
+margin-top: 10px;
+border: 1px solid var(--border);
+border-radius: 6px;
+background: var(--bg);
+}
+
+@media (max-width: 768px) {
+.sidebar-toggle{display: block;}
+.container {flex-direction: column;}
+.sidebar {
+width: 210px;
+height: 100vh;
+position: fixed;
+left: 0;
+top: 0;
+transform: translateX(-100%);
+border-right: 1px solid var(--border);
+border-bottom: none;
+}
+.sidebar.show {
+transform: translateX(0);
+}
+.main {
+padding: 60px 15px 40px; 
+}
+.post {padding: 25px 0;}
+.post h2 {font-size: 18px;}
+.post-content {font-size: 16px;}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
-  <button class="sidebar-toggle" id="sidebarToggle">菜单</button>
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+<button class="sidebar-toggle" id="sidebarToggle">菜单</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <div class="container">
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-main">
-        <h2>Eskiry's Records</h2>
-        <div id="categoryContainer"></div>
-      </div>
+<div class="container">
+<div class="sidebar" id="sidebar">
+<div class="sidebar-main">
+<h2>Eskiry's Records</h2>
+<div id="categoryContainer"></div>
+</div>
 
-      <div class="sidebar-footer">
-        <input type="text" id="searchInput" class="search-input" placeholder="搜索标题/正文关键词...">
-        <button class="theme-btn" id="themeBtn">加载中...</button>
-        <button class="random-mini-btn" onclick="showRandomPost()">随机</button>
-      </div>
-    </div>
+<div class="sidebar-footer">
+<input type="text" id="searchInput" class="search-input" placeholder="搜索标题/正文关键词...">
+<button class="theme-btn" id="themeBtn">加载中...</button>
+<button class="random-mini-btn" onclick="showRandomPost()">随机</button>
+</div>
+</div>
 
-    <div class="main">
-      <div id="fallbackBox">
-        <h3 style="margin-bottom: 8px; color: var(--btn-text);">📂 本地离线文件手动加载</h3>
-        <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
-          提示：若在本地双击打开网页，可导入对应的 posts.json 数据文件：
-        </p>
-        
-        <div class="fallback-file-item">
-          <label><b>1. 导入文章库 (posts.json)：</b> <span id="statusPosts" style="color:green;font-size:13px;"></span></label><br>
-          <input type="file" accept=".json" onchange="loadLocalPostsJson(this)" style="margin-top:6px;">
-        </div>
-      </div>
+<div class="main">
+<div id="fallbackBox">
+<h3 style="margin-bottom: 8px; color: var(--btn-text);">📂 本地离线文件手动加载</h3>
+<p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
+提示：若在本地双击打开网页，可导入对应的 posts.json 数据文件：
+</p>
 
-      <div id="list"></div>
-      <div class="pagination" id="pagination"></div>
-    </div>
-  </div>
+<div class="fallback-file-item">
+<label><b>1. 导入文章库 (posts.json)：</b> <span id="statusPosts" style="color:green;font-size:13px;"></span></label><br>
+<input type="file" accept=".json" onchange="loadLocalPostsJson(this)" style="margin-top:6px;">
+</div>
+</div>
 
-  <script>
-    let allPosts = [], allThoughts = [], allLabels = [];
-    let activeCategory = ''; 
-    let currentPage = 1;
-    const pageSize = 25;
-    let filteredPosts = [];
-    let searchInput = null, searchTimer = null;
-    const themeBtn = document.getElementById('themeBtn');
+<div id="list"></div>
+<div class="pagination" id="pagination"></div>
+</div>
+</div>
 
-    function escapeHTML(str) {
-      return (str || '').replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[m]));
-    }
+<script>
+let allPosts = [], allThoughts = [], allLabels = [];
+let activeCategory = ''; 
+let currentPage = 1;
+const pageSize = 25;
+let filteredPosts = [];
+let searchInput = null, searchTimer = null;
+const themeBtn = document.getElementById('themeBtn');
 
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    const sidebarToggle = document.getElementById('sidebarToggle');
+function escapeHTML(str) {
+return (str || '').replace(/[&<>"']/g, m => ({
+'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[m]));
+}
 
-    function toggleSidebar() {
-      sidebar.classList.toggle('show');
-      sidebarOverlay.classList.toggle('show');
-    }
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebarToggle = document.getElementById('sidebarToggle');
 
-    sidebarToggle.addEventListener('click', toggleSidebar);
-    sidebarOverlay.addEventListener('click', toggleSidebar);
+function toggleSidebar() {
+sidebar.classList.toggle('show');
+sidebarOverlay.classList.toggle('show');
+}
 
-    function showRandomPost() {
+sidebarToggle.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', toggleSidebar);
+
+function showRandomPost() {
+      const targetList = (activeCategory === 'THOUGHTS') ? allThoughts : allPosts;
+      // 优化：根据当前分类范围获取随机池，避免全量全局随机错乱
       let targetList = [];
       if (activeCategory === 'THOUGHTS') {
         targetList = allThoughts;
       } else {
         targetList = allPosts.filter(item => (item.labels || []).includes(activeCategory));
       }
-      if (!targetList || targetList.length === 0) return;
-      const post = targetList[Math.floor(Math.random() * targetList.length)];
-      filteredPosts = [post];
-      currentPage = 1;
-      renderPage();
-    }
+if (!targetList || targetList.length === 0) return;
+const post = targetList[Math.floor(Math.random() * targetList.length)];
+filteredPosts = [post];
+currentPage = 1;
+renderPage();
+}
 
-    function applyTheme(theme) {
-      const htmlEl = document.documentElement;
-      if (theme === 'dark') {
-        htmlEl.setAttribute('data-theme', 'dark');
-        themeBtn.textContent = "夜间模式";
-      } else if (theme === 'eink') {
-        htmlEl.setAttribute('data-theme', 'eink');
-        themeBtn.textContent = "E-Ink模式";
-      } else {
-        htmlEl.removeAttribute('data-theme');
-        themeBtn.textContent = "日间模式";
-      }
-      localStorage.setItem('theme', theme);
-    }
+function applyTheme(theme) {
+const htmlEl = document.documentElement;
+if (theme === 'dark') {
+htmlEl.setAttribute('data-theme', 'dark');
+themeBtn.textContent = "夜间模式";
+} else if (theme === 'eink') {
+htmlEl.setAttribute('data-theme', 'eink');
+themeBtn.textContent = "E-Ink模式";
+} else {
+htmlEl.removeAttribute('data-theme');
+themeBtn.textContent = "日间模式";
+}
+localStorage.setItem('theme', theme);
+}
 
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
+const savedTheme = localStorage.getItem('theme') || 'light';
+applyTheme(savedTheme);
 
-    themeBtn.addEventListener('click', () => {
-      const current = localStorage.getItem('theme') || 'light';
-      if (current === 'light') applyTheme('dark');
-      else if (current === 'dark') applyTheme('eink');
-      else applyTheme('light');
-    });
+themeBtn.addEventListener('click', () => {
+const current = localStorage.getItem('theme') || 'light';
+if (current === 'light') applyTheme('dark');
+else if (current === 'dark') applyTheme('eink');
+else applyTheme('light');
+});
 
-    function initSearch() {
-      searchInput = document.getElementById('searchInput');
-      searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(doSearch, 200); 
-      });
-    }
+function initSearch() {
+searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+clearTimeout(searchTimer);
+searchTimer = setTimeout(doSearch, 200); 
+});
+}
 
-    function doSearch() {
-      const keyword = searchInput.value.trim().toLowerCase();
-      currentPage = 1;
-      const targetList = (activeCategory === 'THOUGHTS') ? allThoughts : allPosts;
-      
-      if (!keyword) {
-        selectCategory(activeCategory);
-        return;
-      }
-      
-      filteredPosts = targetList.filter(post => {
-        const title = (post.title || '').toLowerCase();
-        const body = (post.body || '').toLowerCase();
-        return title.includes(keyword) || body.includes(keyword); 
-      });
-      renderPage();
-    }
+function doSearch() {
+const keyword = searchInput.value.trim().toLowerCase();
+currentPage = 1;
+const targetList = (activeCategory === 'THOUGHTS') ? allThoughts : allPosts;
 
-    function init() {
-      initSearch();
-      tryAutoLoadServerFiles();
-    }
+if (!keyword) {
+selectCategory(activeCategory);
+return;
+}
 
-    function tryAutoLoadServerFiles() {
-      const xhr1 = new XMLHttpRequest();
-      xhr1.open('GET', './posts.json', true);
-      xhr1.onreadystatechange = () => {
-        if (xhr1.readyState === 4 && (xhr1.status === 200 || xhr1.status === 0)) {
-          try { 
-            const parsed = JSON.parse(xhr1.responseText); 
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              allPosts = parsed;
-              handleDataReady();
-            }
-          } catch(e) {}
-        }
-      };
-      xhr1.send(null);
-    }
+filteredPosts = targetList.filter(post => {
+const title = (post.title || '').toLowerCase();
+const body = (post.body || '').toLowerCase();
+return title.includes(keyword) || body.includes(keyword); 
+});
+renderPage();
+}
 
-    function handleDataReady() {
-      document.getElementById('fallbackBox').style.display = 'none';
+function init() {
+initSearch();
+tryAutoLoadServerFiles();
+}
 
-      const tagSet = new Set();
-      allPosts.forEach(post => {
-        (post.labels || []).forEach(label => tagSet.add(label));
-      });
-      allLabels = Array.from(tagSet);
-      
-      renderCategory();
-      
-      if (!activeCategory) {
-        if (allLabels.length > 0) {
-          selectCategory(allLabels[0]);
-        } else {
-          selectCategory('THOUGHTS');
-        }
-      } else {
-        selectCategory(activeCategory);
-      }
-    }
+function tryAutoLoadServerFiles() {
+const xhr1 = new XMLHttpRequest();
+xhr1.open('GET', './posts.json', true);
+xhr1.onreadystatechange = () => {
+if (xhr1.readyState === 4 && (xhr1.status === 200 || xhr1.status === 0)) {
+try { 
+const parsed = JSON.parse(xhr1.responseText); 
+if (Array.isArray(parsed) && parsed.length > 0) {
+allPosts = parsed;
+handleDataReady();
+}
+} catch(e) {}
+}
+};
+xhr1.send(null);
+}
 
-    function loadLocalPostsJson(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.readAsText(file, 'UTF-8');
-      reader.onload = (e) => {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (!Array.isArray(parsed)) {
-            alert('错误：posts.json 根节点必须是数组！');
-            return;
-          }
-          allPosts = parsed;
-          document.getElementById('statusPosts').textContent = '✔ 已加载 (' + allPosts.length + '篇)';
-          handleDataReady();
-        } catch (err) { alert('posts.json 解析失败。'); }
-      };
-    }
+function handleDataReady() {
+document.getElementById('fallbackBox').style.display = 'none';
 
-    function loadLocalThoughtsJson(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.readAsText(file, 'UTF-8');
-      reader.onload = (e) => {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (!Array.isArray(parsed)) {
-            alert('错误：thoughts.json 根节点必须是数组！');
-            return;
-          }
-          allThoughts = parsed.sort((a, b) => {
-            return b.title.localeCompare(a.title, undefined, {numeric: true, sensitivity: 'base'});
-          });
-          selectCategory('THOUGHTS');
-        } catch (err) { alert('thoughts.json 解析失败。'); }
-      };
-    }
+const tagSet = new Set();
+allPosts.forEach(post => {
+(post.labels || []).forEach(label => tagSet.add(label));
+});
+allLabels = Array.from(tagSet);
 
-    function renderCategory() {
-      const container = document.getElementById('categoryContainer');
-      const fragment = document.createDocumentFragment(); 
+renderCategory();
 
-      allLabels.forEach(tag => {
-        const div = document.createElement('div');
-        div.className = 'category-item';
-        div.textContent = tag;
-        div.onclick = (e) => selectCategory(tag, e);
-        fragment.appendChild(div);
-      });
+if (!activeCategory) {
+if (allLabels.length > 0) {
+selectCategory(allLabels[0]);
+} else {
+selectCategory('THOUGHTS');
+}
+} else {
+selectCategory(activeCategory);
+}
+}
 
-      const thoughtsDiv = document.createElement('div');
-      thoughtsDiv.className = 'category-item';
-      thoughtsDiv.textContent = '想法';
-      thoughtsDiv.onclick = (e) => selectCategory('THOUGHTS', e);
-      fragment.appendChild(thoughtsDiv);
+function loadLocalPostsJson(input) {
+const file = input.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.readAsText(file, 'UTF-8');
+reader.onload = (e) => {
+try {
+const parsed = JSON.parse(e.target.result);
+if (!Array.isArray(parsed)) {
+alert('错误：posts.json 根节点必须是数组！');
+return;
+}
+allPosts = parsed;
+document.getElementById('statusPosts').textContent = '✔ 已加载 (' + allPosts.length + '篇)';
+handleDataReady();
+} catch (err) { alert('posts.json 解析失败。'); }
+};
+}
 
-      container.innerHTML = '';
-      container.appendChild(fragment); 
-    }
+function loadLocalThoughtsJson(input) {
+const file = input.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.readAsText(file, 'UTF-8');
+reader.onload = (e) => {
+try {
+const parsed = JSON.parse(e.target.result);
+if (!Array.isArray(parsed)) {
+alert('错误：thoughts.json 根节点必须是数组！');
+return;
+}
+allThoughts = parsed.sort((a, b) => {
+return b.title.localeCompare(a.title, undefined, {numeric: true, sensitivity: 'base'});
+});
+selectCategory('THOUGHTS');
+} catch (err) { alert('thoughts.json 解析失败。'); }
+};
+}
 
-    function selectCategory(cat, eventObj) {
-      activeCategory = cat;
-      
-      document.querySelectorAll('.category-item').forEach(el => {
-        if ((cat === 'THOUGHTS' && el.textContent === '想法') || (el.textContent === cat)) {
-          el.classList.add('active');
+function renderCategory() {
+const container = document.getElementById('categoryContainer');
+const fragment = document.createDocumentFragment(); 
+
+allLabels.forEach(tag => {
+const div = document.createElement('div');
+div.className = 'category-item';
+div.textContent = tag;
+div.onclick = (e) => selectCategory(tag, e);
+fragment.appendChild(div);
+});
+
+const thoughtsDiv = document.createElement('div');
+thoughtsDiv.className = 'category-item';
+thoughtsDiv.textContent = '想法';
+thoughtsDiv.onclick = (e) => selectCategory('THOUGHTS', e);
+fragment.appendChild(thoughtsDiv);
+
+container.innerHTML = '';
+container.appendChild(fragment); 
+}
+
+function selectCategory(cat, eventObj) {
+activeCategory = cat;
+
+      // 优化：统一高亮逻辑，通过 DOM 遍历精准匹配激活状态，避免重复查询和冗余分配
+document.querySelectorAll('.category-item').forEach(el => {
+        el.classList.remove('active');
+if ((cat === 'THOUGHTS' && el.textContent === '想法') || (el.textContent === cat)) {
+el.classList.add('active');
         } else {
           el.classList.remove('active');
-        }
-      });
+}
+});
 
-      if (window.innerWidth <= 768) {
-        sidebar.classList.remove('show');
-        sidebarOverlay.classList.remove('show');
-      }
-      
-      if (searchInput) searchInput.value = '';
-      currentPage = 1;
-
-      if (cat === 'THOUGHTS') {
-        if (allThoughts.length === 0) {
-          const listEl = document.getElementById('list');
-          const wrap = document.getElementById('pagination');
-          if (wrap) wrap.innerHTML = '';
-          
-          listEl.innerHTML = `
-            <div id="fallbackThoughtsBox" style="padding: 25px; border: 2px dashed var(--btn-text); border-radius: 8px; background: var(--card-bg); margin-top: 20px;">
-              <h3 style="margin-bottom: 8px; color: var(--btn-text);">📂 导入想法库 (thoughts.json)</h3>
-              <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
-                当前未检测到想法数据，请选择本地的 <b>thoughts.json</b> 文件以查看：
-              </p>
-              <input type="file" accept=".json" onchange="loadLocalThoughtsJson(this)" style="margin-top:6px;">
-            </div>
-          `;
-          filteredPosts = [];
-          return;
-        }
-        filteredPosts = [...allThoughts];
-      } else {
-        filteredPosts = allPosts.filter(item => (item.labels || []).includes(cat));
+      if (eventObj && eventObj.currentTarget) {
+        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+        eventObj.currentTarget.classList.add('active');
       }
 
-      renderPage();
-    }
+if (window.innerWidth <= 768) {
+sidebar.classList.remove('show');
+sidebarOverlay.classList.remove('show');
+}
 
-    function renderPage() {
-      const total = Math.ceil(filteredPosts.length / pageSize);
-      if (total > 0 && currentPage > total) {
-        currentPage = total;
-      }
-      const start = (currentPage - 1) * pageSize;
-      renderPosts(filteredPosts.slice(start, start + pageSize));
-      renderPagination(total);
-    }
+if (searchInput) searchInput.value = '';
+currentPage = 1;
 
-    function renderPosts(posts) {
-      const listEl = document.getElementById('list');
-      if (!listEl) return;
-      
-      if (posts.length === 0) {
-        listEl.innerHTML = `<p style="text-align:left;margin-top:20px;color:var(--text)">当前分类下暂无内容</p>`;
-        return;
-      }
-      
-      const isThoughtView = (activeCategory === 'THOUGHTS');
-      
-      listEl.innerHTML = posts.map((art) => {
-        const title = escapeHTML(art.title || '');
-        const bodyContent = art.body || '';
-        const parsedBody = marked.parse(bodyContent, { breaks: true });
-        
-        if (!isThoughtView) {
-          return `
-            <div class="post">
-              <h2>${title}</h2>
-              <div class="post-content">${parsedBody}</div>
-            </div>
-          `;
-        } else {
-          return `
-            <div class="post">
-              <div class="post-content">${parsedBody}</div>
-              <div class="thought-meta">── ${title}</div>
-            </div>
-          `;
-        }
-      }).join(''); 
-    }
+if (cat === 'THOUGHTS') {
+if (allThoughts.length === 0) {
+const listEl = document.getElementById('list');
+const wrap = document.getElementById('pagination');
+if (wrap) wrap.innerHTML = '';
 
-    function jumpToPage() {
-      const total = Math.ceil(filteredPosts.length / pageSize);
-      const input = document.getElementById('jumpInput');
-      if (!input) return;
-      let page = parseInt(input.value.trim(), 10);
-      if (isNaN(page)) return;
-      page = Math.max(1, Math.min(page, total));
-      currentPage = page;
-      renderPage();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+listEl.innerHTML = `
+           <div id="fallbackThoughtsBox" style="padding: 25px; border: 2px dashed var(--btn-text); border-radius: 8px; background: var(--card-bg); margin-top: 20px;">
+             <h3 style="margin-bottom: 8px; color: var(--btn-text);">📂 导入想法库 (thoughts.json)</h3>
+             <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
+               当前未检测到想法数据，请选择本地的 <b>thoughts.json</b> 文件以查看：
+             </p>
+             <input type="file" accept=".json" onchange="loadLocalThoughtsJson(this)" style="margin-top:6px;">
+           </div>
+         `;
+filteredPosts = [];
+return;
+}
+filteredPosts = [...allThoughts];
+} else {
+filteredPosts = allPosts.filter(item => (item.labels || []).includes(cat));
+}
 
-    function renderPagination(total) {
-      const wrap = document.getElementById('pagination');
-      if (!wrap) return;
-      if (total <= 1) {
-        wrap.innerHTML = '';
-        return;
-      }
-      
-      wrap.innerHTML = `
-        <button class="page-btn" onclick="prev()" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
-        <span>${currentPage}/${total}</span>
-        <button class="page-btn" onclick="next()" ${currentPage === total ? 'disabled' : ''}>下一页</button>
-        <input type="number" class="jump-input" id="jumpInput" min="1" max="${total}" placeholder="页码" />
-        <button class="page-btn" onclick="jumpToPage()">跳转</button>
-      `;
-      
-      const jumpInputEl = document.getElementById('jumpInput');
-      if (jumpInputEl) {
-        jumpInputEl.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') jumpToPage();
-        });
-      }
-    }
+renderPage();
+}
 
-    function prev() { 
-      currentPage--; 
-      renderPage(); 
-      window.scrollTo({top:0, behavior:'smooth'});
-    }
-    
-    function next() { 
-      currentPage++; 
-      renderPage(); 
-      window.scrollTo({top:0, behavior:'smooth'});
-    }
-    
-    init();
-  </script>
+function renderPage() {
+const total = Math.ceil(filteredPosts.length / pageSize);
+if (total > 0 && currentPage > total) {
+currentPage = total;
+}
+const start = (currentPage - 1) * pageSize;
+renderPosts(filteredPosts.slice(start, start + pageSize));
+renderPagination(total);
+}
+
+function renderPosts(posts) {
+const listEl = document.getElementById('list');
+if (!listEl) return;
+
+if (posts.length === 0) {
+listEl.innerHTML = `<p style="text-align:left;margin-top:20px;color:var(--text)">当前分类下暂无内容</p>`;
+return;
+}
+
+const isThoughtView = (activeCategory === 'THOUGHTS');
+
+listEl.innerHTML = posts.map((art) => {
+const title = escapeHTML(art.title || '');
+const bodyContent = art.body || '';
+const parsedBody = marked.parse(bodyContent, { breaks: true });
+
+if (!isThoughtView) {
+return `
+           <div class="post">
+             <h2>${title}</h2>
+             <div class="post-content">${parsedBody}</div>
+           </div>
+         `;
+} else {
+return `
+           <div class="post">
+             <div class="post-content">${parsedBody}</div>
+             <div class="thought-meta">── ${title}</div>
+           </div>
+         `;
+}
+}).join(''); 
+}
+
+function jumpToPage() {
+const total = Math.ceil(filteredPosts.length / pageSize);
+const input = document.getElementById('jumpInput');
+if (!input) return;
+let page = parseInt(input.value.trim(), 10);
+if (isNaN(page)) return;
+page = Math.max(1, Math.min(page, total));
+currentPage = page;
+renderPage();
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPagination(total) {
+const wrap = document.getElementById('pagination');
+if (!wrap) return;
+if (total <= 1) {
+wrap.innerHTML = '';
+return;
+}
+
+wrap.innerHTML = `
+       <button class="page-btn" onclick="prev()" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
+       <span>${currentPage}/${total}</span>
+       <button class="page-btn" onclick="next()" ${currentPage === total ? 'disabled' : ''}>下一页</button>
+       <input type="number" class="jump-input" id="jumpInput" min="1" max="${total}" placeholder="页码" />
+       <button class="page-btn" onclick="jumpToPage()">跳转</button>
+     `;
+
+const jumpInputEl = document.getElementById('jumpInput');
+if (jumpInputEl) {
+jumpInputEl.addEventListener('keydown', (e) => {
+if (e.key === 'Enter') jumpToPage();
+});
+}
+}
+
+function prev() { 
+currentPage--; 
+renderPage(); 
+window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function next() { 
+currentPage++; 
+renderPage(); 
+window.scrollTo({top:0, behavior:'smooth'});
+}
+
+init();
+</script>
 </body>
 </html>
