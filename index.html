@@ -203,11 +203,9 @@
       position:relative;
       text-align:left;
       color:var(--text);
+      white-space: pre-wrap; /* 自动保留文本中的换行与空格 */
+      word-break: break-all;
     }
-
-    .post-content pre,.post-content code{background:var(--code-bg);border-radius:4px}
-    .post-content pre{padding:18px;overflow-x:auto;margin:18px 0;font-size:16px}
-    .post-content code{padding:3px 6px;font-size:16px}
 
     .pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:40px;flex-wrap:wrap;}
     .page-btn{
@@ -270,7 +268,6 @@
       .post-content {font-size: 16px;}
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
@@ -322,6 +319,12 @@
       return (str || '').replace(/[&<>"']/g, m => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[m]));
+    }
+
+    // 纯原生替代 marked：安全转义并保持换行格式
+    function parsePlainText(content) {
+      if (!content) return '';
+      return escapeHTML(content);
     }
 
     const sidebar = document.getElementById('sidebar');
@@ -452,7 +455,11 @@
       reader.readAsText(file, 'UTF-8');
       reader.onload = (e) => {
         try {
-          const parsed = JSON.parse(e.target.result);
+          let text = e.target.result;
+          if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+          text = text.trim();
+
+          const parsed = JSON.parse(text);
           if (!Array.isArray(parsed)) {
             alert('错误：posts.json 根节点必须是数组！');
             return;
@@ -471,7 +478,11 @@
       reader.readAsText(file, 'UTF-8');
       reader.onload = (e) => {
         try {
-          const parsed = JSON.parse(e.target.result);
+          let text = e.target.result;
+          if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+          text = text.trim();
+
+          const parsed = JSON.parse(text);
           if (!Array.isArray(parsed)) {
             alert('错误：thoughts.json 根节点必须是数组！');
             return;
@@ -551,71 +562,6 @@
       renderPage();
     }
 
-    function processListNumbers(html) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      
-      tempDiv.querySelectorAll('ol').forEach(ol => {
-        ol.style.listStyle = 'none';
-        ol.style.paddingLeft = '0';
-        ol.style.margin = '15px 0';
-        
-        ol.querySelectorAll(':scope > li').forEach((li, index) => {
-          li.style.position = 'static';
-          li.style.paddingLeft = '0';
-          li.style.margin = '6px 0';
-          
-          let explicitNum = '';
-          const firstChild = li.firstElementChild;
-          if (firstChild && firstChild.tagName === 'P') {
-            const text = firstChild.textContent.trim();
-            if (/^\d+[\.、]?$/.test(text)) {
-              explicitNum = text.endsWith('.') || text.endsWith('、') ? text : text + '.';
-              firstChild.remove();
-            }
-          }
-          
-          const numStr = explicitNum || ((index + 1) + '.');
-          
-          const span = document.createElement('span');
-          span.textContent = numStr + ' ';
-          
-          li.insertBefore(span, li.firstChild);
-          
-          const remainingP = li.querySelector('p');
-          if (remainingP) {
-            remainingP.style.display = 'inline';
-            remainingP.style.margin = '0';
-          }
-        });
-      });
-
-      tempDiv.querySelectorAll('ul').forEach(ul => {
-        ul.style.listStyle = 'none';
-        ul.style.paddingLeft = '0';
-        ul.style.margin = '15px 0';
-        
-        ul.querySelectorAll(':scope > li').forEach(li => {
-          li.style.position = 'static';
-          li.style.paddingLeft = '0';
-          li.style.margin = '6px 0';
-          
-          const span = document.createElement('span');
-          span.textContent = '• ';
-          
-          li.insertBefore(span, li.firstChild);
-          
-          const remainingP = li.querySelector('p');
-          if (remainingP) {
-            remainingP.style.display = 'inline';
-            remainingP.style.margin = '0';
-          }
-        });
-      });
-
-      return tempDiv.innerHTML;
-    }
-
     function renderPage() {
       const total = Math.ceil(filteredPosts.length / pageSize);
       if (total > 0 && currentPage > total) {
@@ -640,9 +586,7 @@
       listEl.innerHTML = posts.map((art) => {
         const title = escapeHTML(art.title || '');
         const bodyContent = art.body || '';
-        let parsedBody = marked.parse(bodyContent, { breaks: true });
-        
-        parsedBody = processListNumbers(parsedBody);
+        const parsedBody = parsePlainText(bodyContent);
         
         if (!isThoughtView) {
           return `
